@@ -307,6 +307,7 @@ Build the durable visual foundation before feature screens multiply.
 - `PRD/11_ui_ux_spec.md`
 - `PRD/17_screen_design_spec.md`
 - `PRD/20_approachability_and_onboarding.md`
+- `PRD/21_asset_production_and_iconography.md`
 - `PRD/reference_screens/README.md`
 - `PRD/18_production_scope.md`
 - `PRD/19_testing_quality_browser_audit.md`
@@ -340,6 +341,12 @@ Build the durable visual foundation before feature screens multiply.
   - jargon help tooltip/popover;
   - active situation panel;
   - post-action result explanation.
+- Create asset pipeline foundations:
+  - asset inventory;
+  - asset manifest format;
+  - generated source/final asset directories;
+  - chroma-key removal workflow documentation;
+  - icon-first control and tooltip/popover patterns.
 - Create app shell:
   - desktop nav;
   - mobile bottom nav;
@@ -355,6 +362,7 @@ Build the durable visual foundation before feature screens multiply.
 - Browser-use desktop visual audit.
 - Browser-use mobile visual audit.
 - Browser-use verifies that `/play` and shell states show one obvious next action.
+- Browser-use verifies icon-only controls expose hover/focus/tap help.
 - No incoherent text overlap.
 - Keyboard focus is visible.
 - Screenshot baselines can be captured without manual cropping.
@@ -436,6 +444,7 @@ Let a new player create a founder profile and launch a token quickly and clearly
 - `PRD/11_ui_ux_spec.md`
 - `PRD/17_screen_design_spec.md`
 - `PRD/20_approachability_and_onboarding.md`
+- `PRD/21_asset_production_and_iconography.md`
 - `PRD/19_testing_quality_browser_audit.md`
 
 ### Entry Requirements
@@ -457,6 +466,7 @@ Let a new player create a founder profile and launch a token quickly and clearly
   - review.
 - Live token card preview.
 - Procedural placeholder card.
+- Generated default token/placeholder assets with transparent backgrounds where needed.
 - Token creation API/server action.
 - Token launch into active season.
 
@@ -803,6 +813,7 @@ Complete the local image generation and token card asset pipeline.
 ### PRD References
 
 - `PRD/05_image_generation_local_cpu.md`
+- `PRD/21_asset_production_and_iconography.md`
 - `PRD/10_workers_queues_and_jobs.md`
 - `PRD/12_security_safety_and_abuse.md`
 - `PRD/13_deployment_and_ops.md`
@@ -820,6 +831,9 @@ Complete the local image generation and token card asset pipeline.
 - `apps/worker-image`.
 - Image prompt builder.
 - Local mascot generation backend.
+- Production asset generation workflow for static game art.
+- Chroma-key background removal and alpha validation.
+- Asset manifest updates for generated production assets.
 - Queue states:
   - queued;
   - generating;
@@ -843,6 +857,7 @@ Complete the local image generation and token card asset pipeline.
 - Integration tests for image job lifecycle.
 - Browser-use verifies queued/generating/ready/failed/retry states.
 - Browser-use verifies public token page updates when image is ready.
+- Browser-use verifies transparent asset edges and responsive crops across mobile/tablet/desktop.
 - Image queue burst test covers at least 25 queued jobs with concurrency capped and web still responsive.
 
 ### End Gate
@@ -926,6 +941,7 @@ Prove the host-native app is ready to share without relying on human testing.
 - `PRD/18_production_scope.md`
 - `PRD/19_testing_quality_browser_audit.md`
 - `PRD/20_approachability_and_onboarding.md`
+- `PRD/21_asset_production_and_iconography.md`
 
 ### Entry Requirements
 
@@ -945,6 +961,7 @@ Prove the host-native app is ready to share without relying on human testing.
 - Resolve accessibility findings.
 - Resolve security/rate-limit findings.
 - Resolve performance/scaling findings.
+- Complete production asset pass and icon help pass.
 - Create implementation screenshot baselines.
 - Create release runbook for host-native deployment, backup, restore, rollback, and service restart.
 
@@ -973,6 +990,7 @@ Prove the host-native app is ready to share without relying on human testing.
   - admin;
   - degraded modes.
 - Browser-use approachability playtest passes on desktop and mobile.
+- Browser-use asset/icon QA passes on mobile, tablet, and desktop.
 - Mobile browser-use audit passes.
 - Accessibility checks pass.
 - Dependency audit/security checks pass or documented mitigations exist.
@@ -989,6 +1007,7 @@ Prove the host-native app is ready to share without relying on human testing.
 - No known serious UI/UX confusion remains.
 - No external AI APIs are required.
 - No real trading/liquidity surface exists.
+- Production assets are complete, optimized, transparent where needed, and tracked in the asset manifest.
 - Scaling targets are met or PRD-backed adjustments with follow-up capacity plan are recorded.
 - Release runbook is complete.
 - Commit and push.
