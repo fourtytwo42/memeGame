@@ -306,6 +306,7 @@ Build the durable visual foundation before feature screens multiply.
 
 - `PRD/11_ui_ux_spec.md`
 - `PRD/17_screen_design_spec.md`
+- `PRD/20_approachability_and_onboarding.md`
 - `PRD/reference_screens/README.md`
 - `PRD/18_production_scope.md`
 - `PRD/19_testing_quality_browser_audit.md`
@@ -333,6 +334,12 @@ Build the durable visual foundation before feature screens multiply.
   - empty states;
   - error states;
   - degraded states.
+- Create approachability primitives:
+  - recommended action card;
+  - stat group summary;
+  - jargon help tooltip/popover;
+  - active situation panel;
+  - post-action result explanation.
 - Create app shell:
   - desktop nav;
   - mobile bottom nav;
@@ -347,6 +354,7 @@ Build the durable visual foundation before feature screens multiply.
 - Component tests for important primitives.
 - Browser-use desktop visual audit.
 - Browser-use mobile visual audit.
+- Browser-use verifies that `/play` and shell states show one obvious next action.
 - No incoherent text overlap.
 - Keyboard focus is visible.
 - Screenshot baselines can be captured without manual cropping.
@@ -427,6 +435,7 @@ Let a new player create a founder profile and launch a token quickly and clearly
 - `PRD/07_data_model.md`
 - `PRD/11_ui_ux_spec.md`
 - `PRD/17_screen_design_spec.md`
+- `PRD/20_approachability_and_onboarding.md`
 - `PRD/19_testing_quality_browser_audit.md`
 
 ### Entry Requirements
@@ -457,6 +466,7 @@ Let a new player create a founder profile and launch a token quickly and clearly
 - Integration tests for token creation.
 - E2E test for first launch.
 - Browser-use first-time player playtest.
+- Browser-use approachability check for first launch with no external explanation.
 - Browser-use mobile launch wizard audit.
 - Launch flow works with AI and image generation disabled.
 
@@ -466,6 +476,7 @@ Let a new player create a founder profile and launch a token quickly and clearly
 - Token appears in DB with initial stats and placeholder image.
 - Launch does not depend on AI or image generation.
 - Browser-use confirms the flow is understandable without human explanation.
+- First recommended action appears immediately after launch and explains its tradeoff.
 - Commit and push.
 
 ## Stage 7: Active Token Dashboard And Action Loop
@@ -481,6 +492,7 @@ Make the core game loop playable for one active token.
 - `PRD/10_workers_queues_and_jobs.md`
 - `PRD/11_ui_ux_spec.md`
 - `PRD/17_screen_design_spec.md`
+- `PRD/20_approachability_and_onboarding.md`
 - `PRD/19_testing_quality_browser_audit.md`
 
 ### Entry Requirements
@@ -499,6 +511,7 @@ Make the core game loop playable for one active token.
   - Community;
   - Risk.
 - Recommended actions.
+- Recommendation reasons and plain-language jargon help.
 - Action categories.
 - Cooldowns, energy, and budget display.
 - Server-side action execution.
@@ -514,6 +527,7 @@ Make the core game loop playable for one active token.
 - E2E test for taking at least 3 actions.
 - Browser-use active launch stress flow.
 - Browser-use confirms chart/stat movement and explanations.
+- Browser-use confirms grouped stat summaries and action recommendations are understandable.
 - Scripted action burst verifies cooldown/idempotency behavior.
 
 ### End Gate
@@ -911,6 +925,7 @@ Prove the host-native app is ready to share without relying on human testing.
 - `PRD/16_implementation_checklist.md`
 - `PRD/18_production_scope.md`
 - `PRD/19_testing_quality_browser_audit.md`
+- `PRD/20_approachability_and_onboarding.md`
 
 ### Entry Requirements
 
@@ -957,6 +972,7 @@ Prove the host-native app is ready to share without relying on human testing.
   - leaderboard;
   - admin;
   - degraded modes.
+- Browser-use approachability playtest passes on desktop and mobile.
 - Mobile browser-use audit passes.
 - Accessibility checks pass.
 - Dependency audit/security checks pass or documented mitigations exist.
