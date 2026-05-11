@@ -1,36 +1,82 @@
 # Meme Foundry Build Roadmap
 
 This roadmap is the build control document for Meme Foundry. It translates the
-PRD set into ordered implementation stages with clear entry requirements and
-end gates.
+PRD set into ordered implementation stages with clear entry requirements, build
+scope, verification work, and end gates.
 
 Do not skip stages. Do not start feature work from a later stage until the prior
 stage gate is complete, verified, committed, and pushed.
+
+By the end of this roadmap, the app must be production-release ready. The final
+Docker stage packages an already working host-native production app; Docker is
+not the path for building or validating the product during the main build.
 
 ## Roadmap Rules
 
 - Build in vertical slices, but finish each slice to production quality.
 - Keep the app host-native on the VM until Docker packaging is explicitly reached.
+- Treat the PRD as the product contract. If implementation reality changes, update the PRD before continuing.
 - Every stage must leave the repo in a working state.
-- Every stage must have tests appropriate to the risk of that stage.
-- Every user-facing stage must be checked with `browser-use:browser`.
-- Update `MEMORY.md` with durable setup notes, decisions, commands, and blockers.
+- Every stage must have tests appropriate to its risk and blast radius.
+- Every user-facing stage must be checked with `browser-use:browser` against the actual running app.
+- No human acceptance testing is assumed. Agents must run the automated, browser-use, stress, scaling, accessibility, and security checks required by each gate.
+- Browser-use is the user-facing judge for live UX, layout, responsive behavior, and playability. Scripted tools may generate load, but browser-use must verify that the app remains understandable and usable while that load is present.
+- Update `MEMORY.md` with durable setup notes, decisions, commands, ports, credentials locations, blockers, and verification evidence that needs to survive context compression.
 - Commit and push after every meaningful stage or working milestone.
-- If a stage uncovers a bad assumption in the PRD, update the PRD before continuing.
 - If a gate fails, fix the stage instead of building around the failure.
+
+## Universal Stage Gate
+
+Every stage must finish with evidence for:
+
+- PRD sections consulted and any PRD updates made.
+- Commands run and test results.
+- Browser-use audit notes or screenshots for user-facing work.
+- Stress/scaling result when the stage affects data volume, realtime, workers, AI, image generation, or public traffic.
+- Updated `MEMORY.md` when setup, operations, or durable decisions changed.
+- Clean VM Git status except intentionally ignored local files.
+- Pushed commit for tracked code/docs.
+
+## Scaling And Stress Contract
+
+Scaling is part of production readiness, not an optional polish task. Early
+stages should add the hooks and seed/load commands needed for later stress
+testing. Later stages must prove the live app can stay responsive under load on
+the single target VM.
+
+Baseline release targets for the host-native single-VM build:
+
+- Production-like seed data: at least 1,000 users, 2,500 launch tokens, 25 crews, 8 narratives, and 100,000 ticks/events.
+- Concurrent synthetic traffic: at least 50 logged-in user sessions performing read/action/support flows.
+- Realtime pressure: at least 100 concurrent Socket.IO clients across token, season, crew, leaderboard, narrative, and user rooms.
+- Worker burst: at least 500 simulation jobs, 100 text-AI jobs with fallback coverage, and 25 image jobs queued with image concurrency capped.
+- Soak test: at least 30 minutes with web, realtime, queues, workers, local AI degraded/available checks, and image queue activity.
+- Browser-use confirmation during load: key pages remain readable, responsive, and actionable; no incoherent overlap; degraded states are clear.
+- Admin health page shows accurate queue depth, failed jobs, service status, and last tick while load is active.
+
+These targets may be adjusted only with implementation evidence recorded in the
+PRD and `MEMORY.md`. Lowering a target requires a clear technical reason and a
+follow-up scaling path.
 
 ## Stage 0: Operating Baseline
 
 ### Goal
 
-Make sure agents, humans, and the VM all agree on how the project is built.
+Make sure agents, the VM, GitHub, and the PRD all agree on how the project is
+built and verified.
+
+### PRD References
+
+- `PRD/00_README.md`
+- `PRD/18_production_scope.md`
+- `PRD/19_testing_quality_browser_audit.md`
 
 ### Entry Requirements
 
 - Remote VM access works.
 - GitHub auth works from the VM.
 - `AGENTS.md`, `MEMORY.md`, and this `ROADMAP.md` exist.
-- PRD folder exists locally and on the VM.
+- `PRD/` exists locally and on the VM.
 
 ### Build
 
@@ -39,12 +85,20 @@ Make sure agents, humans, and the VM all agree on how the project is built.
 - Confirm `ROADMAP.md` is tracked by Git.
 - Confirm `AGENTS.md` points to `MEMORY.md` and `ROADMAP.md`.
 - Confirm Git identity and GitHub remote.
+- Record the browser-use testing requirement in roadmap/PRD language.
+
+### Verification
+
+- VM shell access works.
+- GitHub CLI or Git push auth works.
+- `git status` is understood.
+- Agents can find and read `ROADMAP.md`, `PRD/`, and `MEMORY.md`.
 
 ### End Gate
 
-- `git status` is clean on the VM.
-- `git push` works.
-- Agents can find and read `ROADMAP.md`.
+- `git push` works from the VM.
+- `PRD/`, `AGENTS.md`, and `MEMORY.md` are ignored as intended.
+- `ROADMAP.md` is tracked and pushed.
 - `MEMORY.md` records durable VM setup facts.
 
 ## Stage 1: Host-Native Platform Foundation
@@ -53,10 +107,18 @@ Make sure agents, humans, and the VM all agree on how the project is built.
 
 Prepare the VM runtime foundation for a production-grade host-native build.
 
+### PRD References
+
+- `PRD/04_ai_design_local_only.md`
+- `PRD/05_image_generation_local_cpu.md`
+- `PRD/13_deployment_and_ops.md`
+- `PRD/18_production_scope.md`
+- `PRD/19_testing_quality_browser_audit.md`
+
 ### Entry Requirements
 
 - Stage 0 complete.
-- VM disk has enough free space for app, database, Redis, local model, images, and logs.
+- VM disk has enough free space for app, database, Redis, local model, images, logs, and test artifacts.
 
 ### Build
 
@@ -75,15 +137,16 @@ Prepare the VM runtime foundation for a production-grade host-native build.
 - Run a short image backend spike:
   - try FastSD first;
   - fall back to Python Diffusers if FastSD is unstable or hard to operate.
-- Document runtime commands in setup docs.
+- Document runtime commands, service names, ports, and restart commands.
 
-### Tests And Verification
+### Verification
 
 - `psql` can connect to both databases.
 - Redis responds to `PING`.
 - Local LLM server responds locally and is not externally exposed.
 - Image backend can run a tiny smoke generation or documented install smoke test.
 - Nginx is installed but does not interfere with dev servers.
+- Service restart smoke checks pass.
 
 ### End Gate
 
@@ -99,6 +162,14 @@ Prepare the VM runtime foundation for a production-grade host-native build.
 ### Goal
 
 Create the repo structure and quality commands every later stage depends on.
+
+### PRD References
+
+- `PRD/06_technical_architecture.md`
+- `PRD/13_deployment_and_ops.md`
+- `PRD/16_implementation_checklist.md`
+- `PRD/18_production_scope.md`
+- `PRD/19_testing_quality_browser_audit.md`
 
 ### Entry Requirements
 
@@ -122,6 +193,7 @@ Create the repo structure and quality commands every later stage depends on.
 - Add ESLint and formatting.
 - Add Vitest.
 - Add Playwright.
+- Add browser-use audit harness documentation/scripts.
 - Add environment validation.
 - Add pino logging.
 - Add base scripts:
@@ -129,13 +201,20 @@ Create the repo structure and quality commands every later stage depends on.
   - `lint`
   - `format:check`
   - `test`
+  - `test:integration`
   - `test:e2e`
+  - `test:workers`
   - `test:browser-audit`
+  - `test:a11y`
+  - `test:stress`
+  - `test:scale`
+  - `test:release`
   - `prisma:validate`
+  - `audit`
   - `build`
   - `verify`
 
-### Tests And Verification
+### Verification
 
 - Empty app builds.
 - Typecheck passes.
@@ -143,13 +222,15 @@ Create the repo structure and quality commands every later stage depends on.
 - Unit test command passes.
 - Playwright can open the local app.
 - `browser-use:browser` can open the local app.
+- Stress/scale scripts exist as no-op or smoke commands and are wired into release verification plans.
 
 ### End Gate
 
 - `pnpm install` works from a clean checkout.
 - `pnpm verify` passes.
-- Health page renders in browser.
+- Health page renders in the browser.
 - Browser-use screenshot confirms the app shell is nonblank and readable.
+- Test command map is documented.
 - Commit and push.
 
 ## Stage 3: Data, Prisma, Auth, And Seed Foundation
@@ -157,6 +238,14 @@ Create the repo structure and quality commands every later stage depends on.
 ### Goal
 
 Establish the authoritative data model, migrations, auth, roles, and deterministic seed data.
+
+### PRD References
+
+- `PRD/06_technical_architecture.md`
+- `PRD/07_data_model.md`
+- `PRD/12_security_safety_and_abuse.md`
+- `PRD/15_production_acceptance_criteria.md`
+- `PRD/18_production_scope.md`
 
 ### Entry Requirements
 
@@ -182,15 +271,17 @@ Establish the authoritative data model, migrations, auth, roles, and determinist
   - supporter user;
   - crew member user;
   - admin user;
-  - sample live/graduated/dead/image-failed tokens.
+  - sample live/graduated/dead/image-queued/image-failed tokens.
+- Add production-volume seed command for scale testing.
 - Add test database setup/reset.
 - Add `/api/me` or equivalent session check.
 
-### Tests And Verification
+### Verification
 
 - Prisma schema validates.
 - Migrations apply cleanly to dev and test DBs.
 - Seed script is idempotent.
+- Production-volume seed can create the Stage 15 target dataset without hand editing.
 - Auth integration tests pass.
 - Protected routes reject anonymous users.
 - Admin routes reject non-admins.
@@ -202,6 +293,7 @@ Establish the authoritative data model, migrations, auth, roles, and determinist
 - An admin can sign in through the browser.
 - Test DB can be reset with one command.
 - Seeded data appears in the app.
+- Scale seed command is available for later stages.
 - Commit and push.
 
 ## Stage 4: UI System And App Shell
@@ -209,6 +301,14 @@ Establish the authoritative data model, migrations, auth, roles, and determinist
 ### Goal
 
 Build the durable visual foundation before feature screens multiply.
+
+### PRD References
+
+- `PRD/11_ui_ux_spec.md`
+- `PRD/17_screen_design_spec.md`
+- `PRD/reference_screens/README.md`
+- `PRD/18_production_scope.md`
+- `PRD/19_testing_quality_browser_audit.md`
 
 ### Entry Requirements
 
@@ -240,18 +340,20 @@ Build the durable visual foundation before feature screens multiply.
   - active season display;
   - current user/founder display.
 - Add accessibility patterns and visible focus states.
+- Add stable `data-testid` contracts for browser-use and Playwright on primary controls.
 
-### Tests And Verification
+### Verification
 
 - Component tests for important primitives.
 - Browser-use desktop visual audit.
 - Browser-use mobile visual audit.
 - No incoherent text overlap.
 - Keyboard focus is visible.
+- Screenshot baselines can be captured without manual cropping.
 
 ### End Gate
 
-- App shell matches the PRD direction.
+- App shell matches the PRD/reference direction.
 - Mobile layout is usable.
 - UI primitives are ready for feature screens.
 - Browser-use screenshots saved as implementation baselines if useful.
@@ -262,6 +364,13 @@ Build the durable visual foundation before feature screens multiply.
 ### Goal
 
 Build the deterministic server-controlled simulation logic before wiring complex UI.
+
+### PRD References
+
+- `PRD/02_gameplay_core_loop.md`
+- `PRD/07_data_model.md`
+- `PRD/09_simulation_engine.md`
+- `PRD/15_production_acceptance_criteria.md`
 
 ### Entry Requirements
 
@@ -281,12 +390,14 @@ Build the deterministic server-controlled simulation logic before wiring complex
 - Implement narrative heat/saturation/fatigue updates.
 - Implement idempotency keys for actions and jobs.
 - Keep mechanics config/seed-driven where practical.
+- Add deterministic bulk simulation helpers for scale tests.
 
-### Tests And Verification
+### Verification
 
 - Unit tests cover every formula and action.
 - Property/bounds tests prevent stats from escaping valid ranges.
 - Deterministic seeded tests produce repeatable results.
+- Bulk simulation test covers thousands of tokens/ticks without UI.
 - Edge cases are covered:
   - zero hype;
   - max fatigue;
@@ -298,6 +409,7 @@ Build the deterministic server-controlled simulation logic before wiring complex
 ### End Gate
 
 - Game engine can simulate a full token lifecycle without UI.
+- Bulk simulation gives timing evidence for future scale gates.
 - Test coverage is sufficient to tune safely.
 - No client-submitted stat mutation is possible.
 - Commit and push.
@@ -307,6 +419,15 @@ Build the deterministic server-controlled simulation logic before wiring complex
 ### Goal
 
 Let a new player create a founder profile and launch a token quickly and clearly.
+
+### PRD References
+
+- `PRD/01_product_vision.md`
+- `PRD/02_gameplay_core_loop.md`
+- `PRD/07_data_model.md`
+- `PRD/11_ui_ux_spec.md`
+- `PRD/17_screen_design_spec.md`
+- `PRD/19_testing_quality_browser_audit.md`
 
 ### Entry Requirements
 
@@ -330,19 +451,21 @@ Let a new player create a founder profile and launch a token quickly and clearly
 - Token creation API/server action.
 - Token launch into active season.
 
-### Tests And Verification
+### Verification
 
 - Unit tests for validation.
 - Integration tests for token creation.
 - E2E test for first launch.
 - Browser-use first-time player playtest.
 - Browser-use mobile launch wizard audit.
+- Launch flow works with AI and image generation disabled.
 
 ### End Gate
 
 - New player can sign in, create founder profile, and launch first token in under 3 minutes.
 - Token appears in DB with initial stats and placeholder image.
 - Launch does not depend on AI or image generation.
+- Browser-use confirms the flow is understandable without human explanation.
 - Commit and push.
 
 ## Stage 7: Active Token Dashboard And Action Loop
@@ -350,6 +473,15 @@ Let a new player create a founder profile and launch a token quickly and clearly
 ### Goal
 
 Make the core game loop playable for one active token.
+
+### PRD References
+
+- `PRD/02_gameplay_core_loop.md`
+- `PRD/09_simulation_engine.md`
+- `PRD/10_workers_queues_and_jobs.md`
+- `PRD/11_ui_ux_spec.md`
+- `PRD/17_screen_design_spec.md`
+- `PRD/19_testing_quality_browser_audit.md`
 
 ### Entry Requirements
 
@@ -375,13 +507,14 @@ Make the core game loop playable for one active token.
 - Post-action explanations.
 - Simulation worker or scheduled local process.
 
-### Tests And Verification
+### Verification
 
 - Unit/integration tests for action execution.
 - Worker tests for simulation tick.
 - E2E test for taking at least 3 actions.
 - Browser-use active launch stress flow.
 - Browser-use confirms chart/stat movement and explanations.
+- Scripted action burst verifies cooldown/idempotency behavior.
 
 ### End Gate
 
@@ -389,6 +522,7 @@ Make the core game loop playable for one active token.
 - Stats, chart, event feed, and resources update correctly.
 - Risky actions warn before commit.
 - Token can graduate or fail through simulated state.
+- Action flow remains usable during a small scripted action burst.
 - Commit and push.
 
 ## Stage 8: Seasons, Narratives, And Leaderboards
@@ -397,10 +531,21 @@ Make the core game loop playable for one active token.
 
 Make the world shared, competitive, and readable.
 
+### PRD References
+
+- `PRD/02_gameplay_core_loop.md`
+- `PRD/03_multiplayer_design.md`
+- `PRD/08_api_and_realtime_contracts.md`
+- `PRD/09_simulation_engine.md`
+- `PRD/11_ui_ux_spec.md`
+- `PRD/15_production_acceptance_criteria.md`
+- `PRD/19_testing_quality_browser_audit.md`
+
 ### Entry Requirements
 
 - Stage 7 complete.
 - Multiple seeded or created tokens can exist.
+- Scale seed command from Stage 3 exists.
 
 ### Build
 
@@ -412,19 +557,22 @@ Make the world shared, competitive, and readable.
 - Leaderboard page with tabs.
 - Public season event feed.
 - Seed scenarios for crowded/hot/cooling narratives.
+- Indexed queries and pagination/windowing for leaderboard and feed reads.
 
-### Tests And Verification
+### Verification
 
 - Unit tests for narrative updates and scoring.
 - Integration tests for leaderboard refresh.
 - E2E tests for season and leaderboard pages.
 - Browser-use visual audit for season/narratives and leaderboard.
+- Scale test runs leaderboard/narrative updates against production-like seed volume.
 
 ### End Gate
 
 - Multiple launches affect narrative metas.
 - Leaderboards update from real stored data.
 - Player can understand hot vs crowded vs risky narratives.
+- Leaderboard and season pages remain responsive with production-like seed data.
 - Commit and push.
 
 ## Stage 9: Realtime Foundation
@@ -432,6 +580,14 @@ Make the world shared, competitive, and readable.
 ### Goal
 
 Add live updates without destabilizing the core loop.
+
+### PRD References
+
+- `PRD/03_multiplayer_design.md`
+- `PRD/08_api_and_realtime_contracts.md`
+- `PRD/10_workers_queues_and_jobs.md`
+- `PRD/13_deployment_and_ops.md`
+- `PRD/19_testing_quality_browser_audit.md`
 
 ### Entry Requirements
 
@@ -453,20 +609,23 @@ Add live updates without destabilizing the core loop.
 - Client subscription hooks.
 - Reconnect handling.
 - Degraded realtime state.
+- Synthetic socket load script.
 
-### Tests And Verification
+### Verification
 
 - Socket integration tests.
 - Room authorization tests.
 - E2E live update tests.
 - Browser-use confirms token updates without refresh.
 - Browser-use verifies reconnect/degraded messaging.
+- Realtime load test reaches at least 100 concurrent socket clients.
 
 ### End Gate
 
 - Token ticks, support actions, leaderboard changes, and graduation alerts broadcast live.
 - Unauthorized users cannot subscribe to private rooms.
 - App remains usable if realtime disconnects.
+- Realtime meets the current scale target or a documented PRD-backed adjustment exists.
 - Commit and push.
 
 ## Stage 10: Public Token Pages And Support Actions
@@ -474,6 +633,14 @@ Add live updates without destabilizing the core loop.
 ### Goal
 
 Make multiplayer support visible and meaningful outside the owner dashboard.
+
+### PRD References
+
+- `PRD/03_multiplayer_design.md`
+- `PRD/08_api_and_realtime_contracts.md`
+- `PRD/11_ui_ux_spec.md`
+- `PRD/17_screen_design_spec.md`
+- `PRD/19_testing_quality_browser_audit.md`
 
 ### Entry Requirements
 
@@ -490,19 +657,22 @@ Make multiplayer support visible and meaningful outside the owner dashboard.
 - Supporter list.
 - Public event feed.
 - Realtime support notifications.
+- Rate limits and idempotency for support actions.
 
-### Tests And Verification
+### Verification
 
 - Integration tests for support actions.
 - E2E test for supporting another token.
 - Browser-use public token page audit.
 - Browser-use verifies support feedback and cooldown.
+- Scripted support burst verifies rate limits, bounds, and public page responsiveness.
 
 ### End Gate
 
 - A player can support another player's token.
 - Support changes are bounded, visible, and explained.
 - Public token page is understandable without owner context.
+- Support flow remains stable under scripted concurrent support.
 - Commit and push.
 
 ## Stage 11: Crews
@@ -510,6 +680,14 @@ Make multiplayer support visible and meaningful outside the owner dashboard.
 ### Goal
 
 Add coordinated multiplayer without direct griefing or chat complexity.
+
+### PRD References
+
+- `PRD/03_multiplayer_design.md`
+- `PRD/07_data_model.md`
+- `PRD/08_api_and_realtime_contracts.md`
+- `PRD/11_ui_ux_spec.md`
+- `PRD/19_testing_quality_browser_audit.md`
 
 ### Entry Requirements
 
@@ -527,13 +705,15 @@ Add coordinated multiplayer without direct griefing or chat complexity.
 - Crew score/rank.
 - Crew event feed.
 - Crew moderation basics.
+- Crew load fixtures for Stage 15 scale tests.
 
-### Tests And Verification
+### Verification
 
 - Integration tests for crew membership and permissions.
 - E2E tests for create/join/feature/support.
 - Browser-use crew flow playtest.
 - Browser-use verifies crew page and support flow.
+- Scale fixture creates at least 25 crews with active members and featured launches.
 
 ### End Gate
 
@@ -541,6 +721,7 @@ Add coordinated multiplayer without direct griefing or chat complexity.
 - Crew can feature and support a launch.
 - Crew actions affect token/crew state in bounded ways.
 - Crew score/rank updates.
+- Crew pages remain usable with production-like crew data.
 - Commit and push.
 
 ## Stage 12: Local Text AI
@@ -548,6 +729,15 @@ Add coordinated multiplayer without direct griefing or chat complexity.
 ### Goal
 
 Add local AI flavor without making AI authoritative or required for gameplay.
+
+### PRD References
+
+- `PRD/04_ai_design_local_only.md`
+- `PRD/10_workers_queues_and_jobs.md`
+- `PRD/12_security_safety_and_abuse.md`
+- `PRD/13_deployment_and_ops.md`
+- `PRD/18_production_scope.md`
+- `PRD/19_testing_quality_browser_audit.md`
 
 ### Entry Requirements
 
@@ -568,8 +758,9 @@ Add local AI flavor without making AI authoritative or required for gameplay.
 - Founder coach.
 - Admin AI logs.
 - AI disabled/degraded mode.
+- Queue concurrency controls for local CPU use.
 
-### Tests And Verification
+### Verification
 
 - Unit tests for schemas and validators.
 - Integration tests with mocked model responses.
@@ -577,6 +768,7 @@ Add local AI flavor without making AI authoritative or required for gameplay.
 - Browser-use AI available audit.
 - Browser-use AI unavailable audit.
 - Verify AI cannot mutate game state directly.
+- Queue burst test covers at least 100 text-AI jobs with fallback/error handling.
 
 ### End Gate
 
@@ -585,6 +777,7 @@ Add local AI flavor without making AI authoritative or required for gameplay.
 - Gameplay works with AI disabled.
 - Admin can inspect AI logs.
 - No external AI API is required.
+- Web/realtime remain responsive while AI queue is busy.
 - Commit and push.
 
 ## Stage 13: Local Image Generation And Card Pipeline
@@ -592,6 +785,15 @@ Add local AI flavor without making AI authoritative or required for gameplay.
 ### Goal
 
 Complete the local image generation and token card asset pipeline.
+
+### PRD References
+
+- `PRD/05_image_generation_local_cpu.md`
+- `PRD/10_workers_queues_and_jobs.md`
+- `PRD/12_security_safety_and_abuse.md`
+- `PRD/13_deployment_and_ops.md`
+- `PRD/18_production_scope.md`
+- `PRD/19_testing_quality_browser_audit.md`
 
 ### Entry Requirements
 
@@ -619,13 +821,15 @@ Complete the local image generation and token card asset pipeline.
 - Regeneration cooldown/cost.
 - Admin image job view.
 - Image moderation/report hooks.
+- Image queue backpressure and disk-space guardrails.
 
-### Tests And Verification
+### Verification
 
 - Unit tests for prompt builder and compositor helpers.
 - Integration tests for image job lifecycle.
 - Browser-use verifies queued/generating/ready/failed/retry states.
 - Browser-use verifies public token page updates when image is ready.
+- Image queue burst test covers at least 25 queued jobs with concurrency capped and web still responsive.
 
 ### End Gate
 
@@ -633,6 +837,7 @@ Complete the local image generation and token card asset pipeline.
 - Failed image generation leaves a usable placeholder.
 - Final cards use app-rendered text, not model-rendered text.
 - Admin can see failed/retry image jobs.
+- Image queue pressure does not block core gameplay.
 - Commit and push.
 
 ## Stage 14: Admin, Moderation, Operations, And Backups
@@ -640,6 +845,14 @@ Complete the local image generation and token card asset pipeline.
 ### Goal
 
 Make the app operable and safe enough to share.
+
+### PRD References
+
+- `PRD/12_security_safety_and_abuse.md`
+- `PRD/13_deployment_and_ops.md`
+- `PRD/15_production_acceptance_criteria.md`
+- `PRD/16_implementation_checklist.md`
+- `PRD/19_testing_quality_browser_audit.md`
 
 ### Entry Requirements
 
@@ -664,8 +877,9 @@ Make the app operable and safe enough to share.
 - Restore scripts/docs.
 - Nginx host-native deployment docs.
 - systemd service templates.
+- Operational scale view for active sessions, socket clients, queues, and worker lag.
 
-### Tests And Verification
+### Verification
 
 - Admin permission tests.
 - Moderation integration tests.
@@ -673,6 +887,7 @@ Make the app operable and safe enough to share.
 - Browser-use admin operations flow.
 - Browser-use degraded mode flow.
 - Verify local LLM, Redis, Postgres, and image runtime are not publicly exposed.
+- Admin health view remains accurate during scripted queue and realtime load.
 
 ### End Gate
 
@@ -680,18 +895,29 @@ Make the app operable and safe enough to share.
 - Backups and restore are documented and tested.
 - Health/degraded states are accurate.
 - Share-ready host-native deployment path is documented.
+- Admin screens expose enough status to diagnose scale/stress failures.
 - Commit and push.
 
-## Stage 15: Full Production QA And Playtesting
+## Stage 15: Production QA, Stress, Scaling, And Release Candidate
 
 ### Goal
 
-Prove the host-native app is ready to share.
+Prove the host-native app is ready to share without relying on human testing.
+
+### PRD References
+
+- `PRD/13_deployment_and_ops.md`
+- `PRD/15_production_acceptance_criteria.md`
+- `PRD/16_implementation_checklist.md`
+- `PRD/18_production_scope.md`
+- `PRD/19_testing_quality_browser_audit.md`
 
 ### Entry Requirements
 
 - Stage 14 complete.
 - All major features exist.
+- Stage-specific browser-use findings are resolved or explicitly tracked as non-blocking.
+- Scale seed/load commands exist.
 
 ### Build
 
@@ -703,13 +929,26 @@ Prove the host-native app is ready to share.
 - Resolve browser audit findings.
 - Resolve accessibility findings.
 - Resolve security/rate-limit findings.
+- Resolve performance/scaling findings.
 - Create implementation screenshot baselines.
+- Create release runbook for host-native deployment, backup, restore, rollback, and service restart.
 
-### Tests And Verification
+### Verification
 
 - `pnpm verify` passes.
 - Full unit/integration/E2E suite passes.
-- Browser-use page audit passes every major route.
+- `pnpm test:browser-audit` passes or invokes the documented browser-use audit checklist.
+- Browser-use page audit passes every major route:
+  - `/`
+  - `/play`
+  - `/launch/new`
+  - `/launch/:id/manage`
+  - `/token/:id`
+  - `/founder/:username`
+  - `/crew/:slug`
+  - `/seasons/:id`
+  - `/leaderboard`
+  - `/admin`
 - Browser-use full playtest passes:
   - first launch;
   - active launch;
@@ -719,7 +958,13 @@ Prove the host-native app is ready to share.
   - admin;
   - degraded modes.
 - Mobile browser-use audit passes.
+- Accessibility checks pass.
+- Dependency audit/security checks pass or documented mitigations exist.
 - Backup/restore verification passes.
+- `pnpm test:stress` runs the concurrent action/support/worker/realtime stress suite.
+- `pnpm test:scale` runs against the production-like dataset and records timing/health evidence.
+- Browser-use validates the app while stress/scale scripts are running.
+- 30-minute host-native soak test completes with no blocker errors.
 
 ### End Gate
 
@@ -728,18 +973,29 @@ Prove the host-native app is ready to share.
 - No known serious UI/UX confusion remains.
 - No external AI APIs are required.
 - No real trading/liquidity surface exists.
+- Scaling targets are met or PRD-backed adjustments with follow-up capacity plan are recorded.
+- Release runbook is complete.
 - Commit and push.
 
 ## Stage 16: Docker Packaging And Final Deployment Hardening
 
 ### Goal
 
-Package the already-working host-native app without changing product behavior.
+Package the already-working host-native app without changing product behavior,
+then verify the packaged stack against the same release bar.
+
+### PRD References
+
+- `PRD/13_deployment_and_ops.md`
+- `PRD/15_production_acceptance_criteria.md`
+- `PRD/18_production_scope.md`
+- `PRD/19_testing_quality_browser_audit.md`
 
 ### Entry Requirements
 
 - Stage 15 complete.
 - Host-native app is already share-ready.
+- Host-native release evidence is recorded.
 
 ### Build
 
@@ -757,13 +1013,15 @@ Package the already-working host-native app without changing product behavior.
 - Resource limits.
 - Backup/restore in packaged mode.
 - Deployment docs.
+- Containerized scale/stress command mapping.
 
-### Tests And Verification
+### Verification
 
 - Docker stack builds.
 - Docker stack starts cleanly.
 - Same automated tests pass against Docker stack where practical.
 - Browser-use production audit passes against Docker stack.
+- Stress/scale suite runs against Docker stack or any excluded case is documented with a reason.
 - Local LLM and image runtime remain private.
 - Backup/restore works in packaged mode.
 
@@ -772,19 +1030,8 @@ Package the already-working host-native app without changing product behavior.
 - Docker packaging is production-ready.
 - Docker behavior matches host-native behavior.
 - Final deployment docs are complete.
+- Final production-release checklist is satisfied.
 - Commit and push.
-
-## Stage Gate Evidence
-
-Every stage should leave behind evidence:
-
-- relevant commands run;
-- tests passed;
-- browser-use audit notes or screenshots when user-facing;
-- updated docs if setup changed;
-- updated `MEMORY.md` for durable operational context;
-- clean Git status;
-- pushed commit.
 
 ## Stop Conditions
 
@@ -793,7 +1040,9 @@ Stop and fix before proceeding if:
 - `pnpm verify` fails;
 - migrations are not reproducible;
 - browser-use finds a broken primary flow;
-- a user-facing page has unreadable or overlapping UI;
+- browser-use finds unreadable, confusing, or overlapping UI on a major page;
+- stress/scale testing shows web, realtime, or admin health becoming unusable at the current target;
 - AI or image failures break core gameplay;
 - auth/admin permissions are ambiguous;
+- local AI/image/Postgres/Redis private services are exposed publicly;
 - a stage requires a decision not recorded in the PRD.
