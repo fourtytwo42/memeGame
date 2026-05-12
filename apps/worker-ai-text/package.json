@@ -1,0 +1,25 @@
+{
+  "name": "@meme-foundry/worker-ai-text",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "DOTENV_CONFIG_PATH=../../.env tsx src/worker.ts",
+    "start": "DOTENV_CONFIG_PATH=../../.env node dist/worker.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings=0",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@meme-foundry/db": "workspace:*",
+    "@meme-foundry/prompts": "workspace:*",
+    "@meme-foundry/realtime": "workspace:*",
+    "bullmq": "^5.66.0",
+    "ioredis": "^5.10.1",
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  }
+}

@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { ActiveTokenDashboard } from "@/components/game/active-token-dashboard";
 import { AppShell } from "@/components/shell/app-shell";
@@ -11,6 +11,10 @@ import {
 } from "@/lib/game-state";
 import { prisma } from "@meme-foundry/db";
 import { ACTION_CATALOG } from "@meme-foundry/game-engine";
+import {
+  fallbackFounderCoach,
+  founderCoachSchema
+} from "@meme-foundry/prompts";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +55,7 @@ export default async function ManageTokenPage({
     where: { id, userId: session.user.id },
     include: {
       user: true,
+      season: true,
       ticks: { orderBy: { createdAt: "asc" }, take: 40 },
       events: { orderBy: { createdAt: "desc" }, take: 8 },
       actions: { orderBy: { createdAt: "desc" }, take: 12 }
@@ -114,6 +119,34 @@ export default async function ManageTokenPage({
   const message = actionMessage
     ? `${ACTION_CATALOG[actionMessage as keyof typeof ACTION_CATALOG]?.label ?? "Action"} applied. Stats, chart, and event feed updated.`
     : (readParam(query, "notice") ?? null);
+  const latestAiLog = await prisma.aiGeneratedContent.findFirst({
+    where: { purpose: "founder-coach" },
+    orderBy: { createdAt: "desc" }
+  });
+  const templateCoach = fallbackFounderCoach({
+    tokenName: token.name,
+    ticker: token.ticker,
+    narrative: token.narrative,
+    seasonName: token.season?.name,
+    stats: {
+      hype: token.hype,
+      trust: token.trust,
+      memeQuality: token.memeQuality,
+      narrativeStrength: token.narrativeStrength,
+      communityStrength: token.communityStrength,
+      whaleInterest: token.whaleInterest,
+      botRisk: token.botRisk,
+      fudPressure: token.fudPressure,
+      fatigue: token.fatigue,
+      marketCap: token.simulatedMarketCap,
+      holders: token.simulatedHolders,
+      score: token.score,
+      energy: token.energy,
+      treasury: token.treasury
+    }
+  });
+  const loggedCoach = founderCoachSchema.safeParse(latestAiLog?.outputJson);
+  const aiCoach = loggedCoach.success ? loggedCoach.data : templateCoach;
 
   return (
     <AppShell>
@@ -127,6 +160,14 @@ export default async function ManageTokenPage({
           explanation: actionExplanation(action.resultJson)
         }))}
         actionsByIntent={actionsByIntent}
+        aiCoach={{
+          ...aiCoach,
+          status:
+            latestAiLog?.status?.includes("model") && loggedCoach.success
+              ? "available"
+              : aiCoach.status,
+          generatedAt: latestAiLog?.createdAt.toISOString() ?? null
+        }}
         chart={chartTicks.map((tick, index) => ({
           label: index === chartTicks.length - 1 ? "Now" : `${index + 1}`,
           marketCap: tick.marketCap,

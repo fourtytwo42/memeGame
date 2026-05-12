@@ -1,0 +1,22 @@
+{
+  "name": "@meme-foundry/ai-service",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "DOTENV_CONFIG_PATH=../../.env tsx src/server.ts",
+    "start": "DOTENV_CONFIG_PATH=../../.env node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings=0",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@meme-foundry/db": "workspace:*",
+    "@meme-foundry/prompts": "workspace:*",
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  }
+}

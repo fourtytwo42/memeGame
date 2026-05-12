@@ -8,6 +8,7 @@ import {
   Flame,
   Info,
   ShieldAlert,
+  Sparkles,
   Zap
 } from "lucide-react";
 import {
@@ -79,6 +80,14 @@ type DashboardProps = {
     createdAt: string;
     explanation: string;
   }>;
+  aiCoach: {
+    status: "available" | "template" | "degraded";
+    summary: string;
+    recommendedActionId?: string | null;
+    nextSteps: string[];
+    riskNote: string;
+    generatedAt?: string | null;
+  };
   pinnedEvent?: {
     title: string;
     description: string;
@@ -206,6 +215,7 @@ export function ActiveTokenDashboard({
   recommendedActionId,
   events,
   actionFeed,
+  aiCoach,
   pinnedEvent,
   message,
   error,
@@ -459,6 +469,46 @@ export function ActiveTokenDashboard({
             tokenId={token.id}
             userId={userId}
           />
+          <Panel data-testid="ai-coach-panel">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  Founder coach
+                </p>
+                <h2 className="mt-1 font-black text-white">Next useful move</h2>
+              </div>
+              <Sparkles className="text-emerald-300" size={20} />
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Badge tone={aiCoach.status === "available" ? "good" : "warn"}>
+                {aiCoach.status === "available" ? "Local AI" : "Safe template"}
+              </Badge>
+              {aiCoach.generatedAt ? (
+                <Badge tone="neutral">
+                  {new Date(aiCoach.generatedAt).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit"
+                  })}
+                </Badge>
+              ) : null}
+            </div>
+            <p className="mt-3 text-sm leading-6 text-slate-300">
+              {aiCoach.summary}
+            </p>
+            <ul className="mt-3 grid gap-2 text-sm text-slate-200">
+              {aiCoach.nextSteps.map((step) => (
+                <li
+                  className="rounded-md border border-white/10 bg-slate-950/55 px-3 py-2"
+                  key={step}
+                >
+                  {step}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-xs font-semibold leading-5 text-slate-400">
+              {aiCoach.riskNote}
+            </p>
+          </Panel>
           {pinnedEvent ? (
             <Panel
               className="border-amber-300/25 bg-amber-300/10"

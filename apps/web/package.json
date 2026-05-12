@@ -15,6 +15,7 @@
     "@hookform/resolvers": "^5.2.0",
     "@meme-foundry/db": "workspace:*",
     "@meme-foundry/game-engine": "workspace:*",
+    "@meme-foundry/prompts": "workspace:*",
     "@meme-foundry/shared-types": "workspace:*",
     "@meme-foundry/ui": "workspace:*",
     "@meme-foundry/validation": "workspace:*",
