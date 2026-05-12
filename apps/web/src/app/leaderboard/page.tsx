@@ -81,76 +81,84 @@ export default async function LeaderboardPage({
         </Panel>
 
         <Panel data-testid="leaderboard-tabs">
-          <div className="mb-4 flex gap-2 overflow-x-auto">
-            {tabs.map(([id, label]) => (
-              <Link
-                className={`min-h-10 shrink-0 rounded-md px-4 py-2 text-sm font-black ${category === id ? "bg-amber-300 text-slate-950" : "bg-white/[0.04] text-slate-200 hover:bg-white/10"}`}
-                href={`/leaderboard?tab=${id}` as Route}
-                key={id}
-              >
-                {label}
-              </Link>
-            ))}
-          </div>
-          <div className="grid gap-3" data-testid="leaderboard-results">
-            {snapshots.map((snapshot) => {
-              const token = tokenById.get(snapshot.entityId);
-              if (!token) return null;
-              return (
+          <div className="grid gap-4 md:grid-cols-[13rem_1fr] md:items-start">
+            <nav
+              aria-label="Leaderboard categories"
+              className="flex gap-2 overflow-x-auto md:sticky md:top-4 md:grid md:overflow-visible"
+              data-testid="leaderboard-side-menu"
+            >
+              {tabs.map(([id, label]) => (
                 <Link
-                  className="grid gap-3 rounded-lg border border-white/10 bg-slate-950/55 p-4 hover:border-amber-300/50 md:grid-cols-[4rem_1fr_10rem] md:items-center"
-                  href={`/token/${token.id}` as Route}
-                  key={snapshot.id}
+                  className={`min-h-10 shrink-0 rounded-md px-4 py-2 text-sm font-black md:flex md:items-center md:border md:px-3 ${category === id ? "bg-amber-300 text-slate-950 md:border-amber-300" : "bg-white/[0.04] text-slate-200 hover:bg-white/10 md:border-white/10 md:hover:border-amber-300/40"}`}
+                  href={`/leaderboard?tab=${id}` as Route}
+                  key={id}
                 >
-                  <div className="flex items-center gap-3 md:block">
-                    <span className="grid size-10 place-items-center rounded-full bg-amber-300 text-lg font-black text-slate-950">
-                      {snapshot.rank}
-                    </span>
-                    {snapshot.rank && snapshot.rank <= 3 ? (
-                      <Medal className="text-amber-300 md:mt-2" size={20} />
-                    ) : null}
-                  </div>
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-xl font-black text-white">
-                        {token.name}
-                      </h2>
-                      <Badge>${token.ticker}</Badge>
-                      <Badge
-                        tone={token.status === "graduated" ? "good" : "neutral"}
-                      >
-                        {token.status}
-                      </Badge>
-                    </div>
-                    <p className="mt-1 text-sm text-slate-400">
-                      Founder {token.user.username}
-                      {token.crew ? ` · Crew ${token.crew.name}` : ""}
-                    </p>
-                  </div>
-                  <div className="rounded-md bg-slate-900/80 p-3 text-right">
-                    <p className="text-xs font-bold uppercase text-slate-400">
-                      {tabs.find(([id]) => id === category)?.[1]}
-                    </p>
-                    <p className="mt-1 text-2xl font-black text-amber-200">
-                      {formatValue(category, snapshot.score)}
-                    </p>
-                  </div>
+                  {label}
                 </Link>
-              );
-            })}
-          </div>
-          {snapshots.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-white/15 bg-slate-950/45 p-6 text-center">
-              <TrendingUp className="mx-auto text-slate-400" />
-              <h2 className="mt-3 text-xl font-black text-white">
-                No rankings yet
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-slate-400">
-                Run the world refresh worker after launches exist to create
-                season-scoped score snapshots.
-              </p>
+              ))}
+            </nav>
+            <div className="grid gap-3" data-testid="leaderboard-results">
+              {snapshots.map((snapshot) => {
+                const token = tokenById.get(snapshot.entityId);
+                if (!token) return null;
+                return (
+                  <Link
+                    className="grid gap-3 rounded-lg border border-white/10 bg-slate-950/55 p-4 hover:border-amber-300/50 md:grid-cols-[4rem_1fr_10rem] md:items-center"
+                    href={`/token/${token.id}` as Route}
+                    key={snapshot.id}
+                  >
+                    <div className="flex items-center gap-3 md:block">
+                      <span className="grid size-10 place-items-center rounded-full bg-amber-300 text-lg font-black text-slate-950">
+                        {snapshot.rank}
+                      </span>
+                      {snapshot.rank && snapshot.rank <= 3 ? (
+                        <Medal className="text-amber-300 md:mt-2" size={20} />
+                      ) : null}
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-xl font-black text-white">
+                          {token.name}
+                        </h2>
+                        <Badge>${token.ticker}</Badge>
+                        <Badge
+                          tone={
+                            token.status === "graduated" ? "good" : "neutral"
+                          }
+                        >
+                          {token.status}
+                        </Badge>
+                      </div>
+                      <p className="mt-1 text-sm text-slate-400">
+                        Founder {token.user.username}
+                        {token.crew ? ` · Crew ${token.crew.name}` : ""}
+                      </p>
+                    </div>
+                    <div className="rounded-md bg-slate-900/80 p-3 text-right">
+                      <p className="text-xs font-bold uppercase text-slate-400">
+                        {tabs.find(([id]) => id === category)?.[1]}
+                      </p>
+                      <p className="mt-1 text-2xl font-black text-amber-200">
+                        {formatValue(category, snapshot.score)}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+              {snapshots.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-white/15 bg-slate-950/45 p-6 text-center">
+                  <TrendingUp className="mx-auto text-slate-400" />
+                  <h2 className="mt-3 text-xl font-black text-white">
+                    No rankings yet
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-400">
+                    Run the world refresh worker after launches exist to create
+                    season-scoped score snapshots.
+                  </p>
+                </div>
+              ) : null}
             </div>
-          ) : null}
+          </div>
         </Panel>
       </div>
     </AppShell>
