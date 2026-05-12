@@ -105,6 +105,9 @@ For every captured route, the browser-use DOM snapshot confirmed:
 
 ## Remaining Stage 15 Work
 
+- `docs/RELEASE_RUNBOOK.md` now covers host-native preflight,
+  verification, service install/restart, health checks, backup/restore,
+  rollback, soak/scale evidence, and final release checklist.
 - Complete browser-use visual audits/playtests for all major flows.
 - Complete soak, security, dependency, backup/restore, scale, degraded-mode,
-  and release runbook evidence.
+  and release evidence.
