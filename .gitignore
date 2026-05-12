@@ -61,3 +61,11 @@ Thumbs.db
 .cache/
 tmp/
 temp/
+
+# Playwright artifacts
+playwright-report/
+test-results/
+
+# Runtime generated assets/data
+assets/source/imagegen/*
+!assets/source/imagegen/.gitkeep
