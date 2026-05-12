@@ -81,15 +81,15 @@ export default async function LeaderboardPage({
         </Panel>
 
         <Panel data-testid="leaderboard-tabs">
-          <div className="grid gap-4 sm:grid-cols-[13rem_1fr] sm:items-start">
+          <div className="grid grid-cols-[minmax(5.5rem,8rem)_1fr] items-start gap-3 sm:grid-cols-[13rem_1fr] sm:gap-4">
             <nav
               aria-label="Leaderboard categories"
-              className="flex gap-2 overflow-x-auto sm:sticky sm:top-4 sm:grid sm:overflow-visible"
+              className="sticky top-3 grid gap-2"
               data-testid="leaderboard-side-menu"
             >
               {tabs.map(([id, label]) => (
                 <Link
-                  className={`min-h-10 shrink-0 rounded-md px-4 py-2 text-sm font-black sm:flex sm:items-center sm:border sm:px-3 ${category === id ? "bg-amber-300 text-slate-950 sm:border-amber-300" : "bg-white/[0.04] text-slate-200 hover:bg-white/10 sm:border-white/10 sm:hover:border-amber-300/40"}`}
+                  className={`flex min-h-10 items-center rounded-md border px-2 py-2 text-xs font-black sm:px-3 sm:text-sm ${category === id ? "border-amber-300 bg-amber-300 text-slate-950" : "border-white/10 bg-white/[0.04] text-slate-200 hover:border-amber-300/40 hover:bg-white/10"}`}
                   href={`/leaderboard?tab=${id}` as Route}
                   key={id}
                 >
