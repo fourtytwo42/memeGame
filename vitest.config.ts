@@ -1,7 +1,9 @@
+import "dotenv/config";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
+const databaseUrl = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL;
 
 export default defineConfig({
   resolve: {
@@ -14,6 +16,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    env: databaseUrl ? { DATABASE_URL: databaseUrl } : undefined,
     include: ["tests/**/*.test.ts", "packages/**/*.test.ts"],
     coverage: {
       reporter: ["text", "html"]

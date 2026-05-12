@@ -22,7 +22,7 @@ export function Button({
   return (
     <button
       className={joinClasses(
-        "inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-black transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300 disabled:cursor-not-allowed disabled:opacity-60",
+        "inline-flex min-h-11 scroll-mt-24 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-black transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300 disabled:cursor-not-allowed disabled:opacity-60",
         tones[tone],
         className
       )}

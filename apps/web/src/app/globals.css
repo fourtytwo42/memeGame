@@ -19,6 +19,10 @@ body {
   color: var(--foreground);
 }
 
+html {
+  scroll-padding-block: 5rem;
+}
+
 body {
   margin: 0;
   font-family:
@@ -38,6 +42,14 @@ body {
 button,
 a {
   touch-action: manipulation;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  scroll-margin-block: 6rem;
 }
 
 :focus-visible {

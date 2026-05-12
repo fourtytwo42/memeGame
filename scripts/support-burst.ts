@@ -9,10 +9,31 @@ async function main() {
     where: { status: "live" },
     orderBy: { updatedAt: "desc" }
   });
-  const users = await prisma.user.findMany({
+  let users = await prisma.user.findMany({
     where: { id: { not: token.userId }, status: "active" },
     take: clients
   });
+  if (users.length < clients) {
+    const missing = clients - users.length;
+    await prisma.user.createMany({
+      data: Array.from({ length: missing }, (_, index) => {
+        const ordinal = users.length + index + 1;
+        return {
+          id: `support-burst-user-${ordinal}`,
+          email: `support-burst-user-${ordinal}@example.com`,
+          username: `support_burst_user_${ordinal}`,
+          status: "active",
+          supportEnergy: 100
+        };
+      }),
+      skipDuplicates: true
+    });
+    users = await prisma.user.findMany({
+      where: { id: { not: token.userId }, status: "active" },
+      orderBy: { id: "asc" },
+      take: clients
+    });
+  }
   if (users.length < clients) {
     throw new Error(`Only found ${users.length}/${clients} support users.`);
   }

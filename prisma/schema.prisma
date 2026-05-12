@@ -166,17 +166,18 @@ model LaunchToken {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  season         Season?         @relation(fields: [seasonId], references: [id])
-  crew           Crew?           @relation(fields: [crewId], references: [id])
-  ticks          TokenTick[]
-  actions        PlayerAction[]
-  events         GameEvent[]
-  crewActions    CrewAction[]
-  supportActions SupportAction[]
-  imageJobs      ImageJob[]
-  rivalriesA     Rivalry[]       @relation("RivalryTokenA")
-  rivalriesB     Rivalry[]       @relation("RivalryTokenB")
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  season          Season?         @relation(fields: [seasonId], references: [id])
+  crew            Crew?           @relation("CrewTokens", fields: [crewId], references: [id])
+  ticks           TokenTick[]
+  actions         PlayerAction[]
+  events          GameEvent[]
+  crewActions     CrewAction[]
+  supportActions  SupportAction[]
+  imageJobs       ImageJob[]
+  rivalriesA      Rivalry[]       @relation("RivalryTokenA")
+  rivalriesB      Rivalry[]       @relation("RivalryTokenB")
+  featuredByCrews Crew[]          @relation("CrewFeaturedToken")
 
   @@unique([userId, ticker])
   @@index([seasonId, status, score])
@@ -242,21 +243,27 @@ model GameEvent {
 }
 
 model Crew {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  slug        String   @unique
-  description String?
-  avatarUrl   String?
-  seasonId    String?
-  reputation  Int      @default(50)
-  score       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id               String   @id @default(cuid())
+  name             String   @unique
+  slug             String   @unique
+  description      String?
+  avatarUrl        String?
+  seasonId         String?
+  reputation       Int      @default(50)
+  score            Int      @default(0)
+  energy           Int      @default(100)
+  resources        Int      @default(100)
+  featuredTokenId  String?
+  moderationStatus String   @default("active")
+  tagline          String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   season         Season?         @relation(fields: [seasonId], references: [id])
+  featuredToken  LaunchToken?    @relation("CrewFeaturedToken", fields: [featuredTokenId], references: [id])
   members        CrewMember[]
   actions        CrewAction[]
-  tokens         LaunchToken[]
+  tokens         LaunchToken[]   @relation("CrewTokens")
   events         GameEvent[]
   supportActions SupportAction[]
 }
@@ -275,20 +282,22 @@ model CrewMember {
 }
 
 model CrewAction {
-  id          String   @id @default(cuid())
-  crewId      String
-  tokenId     String?
-  actionType  String
-  energyCost  Int
-  impactJson  Json?
-  createdById String
-  createdAt   DateTime @default(now())
+  id             String   @id @default(cuid())
+  crewId         String
+  tokenId        String?
+  actionType     String
+  energyCost     Int
+  impactJson     Json?
+  createdById    String
+  idempotencyKey String?  @unique
+  createdAt      DateTime @default(now())
 
   crew    Crew         @relation(fields: [crewId], references: [id], onDelete: Cascade)
   token   LaunchToken? @relation(fields: [tokenId], references: [id])
   creator User         @relation("CrewActionCreator", fields: [createdById], references: [id], onDelete: Cascade)
 
   @@index([crewId, createdAt])
+  @@index([crewId, tokenId, actionType, createdAt])
 }
 
 model SupportAction {
