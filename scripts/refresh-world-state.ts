@@ -3,6 +3,7 @@ import {
   activeSeasonOrThrow,
   refreshNarrativesAndLeaderboards
 } from "../apps/web/src/lib/server/world-state";
+import { closeRealtimePublisher } from "@meme-foundry/realtime";
 
 async function main() {
   const seasonArg = process.argv.find((arg) => arg.startsWith("--season="));
@@ -27,4 +28,7 @@ main()
     console.error(error);
     process.exitCode = 1;
   })
-  .finally(async () => prisma.$disconnect());
+  .finally(async () => {
+    await closeRealtimePublisher();
+    await prisma.$disconnect();
+  });

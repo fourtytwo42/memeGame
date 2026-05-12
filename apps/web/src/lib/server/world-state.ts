@@ -1,4 +1,5 @@
 import { prisma } from "@meme-foundry/db";
+import { publishRealtimeEvent } from "@meme-foundry/realtime";
 import { calculateScore, updateNarrativeMeta } from "@meme-foundry/game-engine";
 import { tokenToEngineState } from "../game-state";
 
@@ -44,7 +45,7 @@ export async function refreshNarrativesAndLeaderboards(seasonId: string) {
       recentGraduations,
       minutesElapsed: 5
     });
-    await prisma.narrativeMeta.update({
+    const savedNarrative = await prisma.narrativeMeta.update({
       where: { id: narrative.id },
       data: {
         activeLaunches: updated.activeLaunches,
@@ -52,6 +53,16 @@ export async function refreshNarrativesAndLeaderboards(seasonId: string) {
         saturation: updated.saturation,
         fatigue: updated.fatigue
       }
+    });
+    await publishRealtimeEvent({
+      type: "NARRATIVE_UPDATE",
+      seasonId,
+      narrativeId: savedNarrative.id,
+      slug: savedNarrative.slug,
+      heat: savedNarrative.heat,
+      saturation: savedNarrative.saturation,
+      fatigue: savedNarrative.fatigue,
+      activeLaunches: savedNarrative.activeLaunches
     });
   }
 
@@ -98,6 +109,16 @@ export async function refreshNarrativesAndLeaderboards(seasonId: string) {
     });
   }
 
+  await Promise.all(
+    categories.map((category) =>
+      publishRealtimeEvent({
+        type: "LEADERBOARD_UPDATE",
+        seasonId,
+        category: category.category,
+        updatedAt: new Date().toISOString()
+      })
+    )
+  );
   return { narratives: narratives.length, tokens: tokens.length };
 }
 

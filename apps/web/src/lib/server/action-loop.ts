@@ -4,6 +4,7 @@ import {
   tokenUpdateFromState
 } from "../game-state";
 import { prisma } from "@meme-foundry/db";
+import { publishRealtimeEvent } from "@meme-foundry/realtime";
 import {
   ACTION_CATALOG,
   applyAction,
@@ -96,72 +97,115 @@ export async function executeActionForUser(input: {
   const finalState = tick.after;
 
   try {
-    const [, playerAction, tokenTick, event] = await prisma.$transaction([
-      prisma.launchToken.update({
-        where: { id: token.id },
-        data: {
-          ...tokenUpdateFromState(finalState),
-          energy: { decrement: action.energyCost }
-        }
-      }),
-      prisma.playerAction.create({
-        data: {
-          userId: input.userId,
-          tokenId: token.id,
-          actionType: input.actionId,
-          cost: action.cost,
-          energyCost: action.energyCost,
-          idempotencyKey,
-          resultJson: {
-            explanation: actionResult.explanation,
-            deltas: actionResult.deltas,
-            tick: {
-              attention: tick.attention,
-              sellPressure: tick.sellPressure,
-              momentum: tick.momentum,
-              holderDelta: tick.holderDelta,
-              priceChangePercent: tick.priceChangePercent,
-              graduationType: tick.graduationType,
-              failure: tick.failure
+    const [updatedToken, playerAction, tokenTick, event] =
+      await prisma.$transaction([
+        prisma.launchToken.update({
+          where: { id: token.id },
+          data: {
+            ...tokenUpdateFromState(finalState),
+            energy: { decrement: action.energyCost }
+          }
+        }),
+        prisma.playerAction.create({
+          data: {
+            userId: input.userId,
+            tokenId: token.id,
+            actionType: input.actionId,
+            cost: action.cost,
+            energyCost: action.energyCost,
+            idempotencyKey,
+            resultJson: {
+              explanation: actionResult.explanation,
+              deltas: actionResult.deltas,
+              tick: {
+                attention: tick.attention,
+                sellPressure: tick.sellPressure,
+                momentum: tick.momentum,
+                holderDelta: tick.holderDelta,
+                priceChangePercent: tick.priceChangePercent,
+                graduationType: tick.graduationType,
+                failure: tick.failure
+              }
             }
           }
-        }
-      }),
-      prisma.tokenTick.create({
-        data: {
-          tokenId: token.id,
-          price: finalState.simulatedPrice,
-          marketCap: finalState.simulatedMarketCap,
-          volume: finalState.simulatedVolume,
-          holders: finalState.simulatedHolders,
-          hype: finalState.hype,
-          trust: finalState.trust,
-          score: finalState.score
-        }
-      }),
-      prisma.gameEvent.create({
-        data: {
-          tokenId: token.id,
-          seasonId: token.seasonId,
-          type: "player_action",
-          title: `${action.label} moved the market`,
-          description: `${actionResult.explanation} Market reaction: ${tick.holderDelta >= 0 ? "+" : ""}${tick.holderDelta} holders and ${(tick.priceChangePercent * 100).toFixed(1)}% price movement.`,
-          source: "action",
-          severity: action.riskLevel === "high" ? "warning" : "info",
-          impactJson: {
-            actionId: input.actionId,
-            riskLevel: action.riskLevel,
-            deltas: actionResult.deltas,
-            tick: {
-              momentum: tick.momentum,
-              attention: tick.attention,
-              sellPressure: tick.sellPressure
+        }),
+        prisma.tokenTick.create({
+          data: {
+            tokenId: token.id,
+            price: finalState.simulatedPrice,
+            marketCap: finalState.simulatedMarketCap,
+            volume: finalState.simulatedVolume,
+            holders: finalState.simulatedHolders,
+            hype: finalState.hype,
+            trust: finalState.trust,
+            score: finalState.score
+          }
+        }),
+        prisma.gameEvent.create({
+          data: {
+            tokenId: token.id,
+            seasonId: token.seasonId,
+            type: "player_action",
+            title: `${action.label} moved the market`,
+            description: `${actionResult.explanation} Market reaction: ${tick.holderDelta >= 0 ? "+" : ""}${tick.holderDelta} holders and ${(tick.priceChangePercent * 100).toFixed(1)}% price movement.`,
+            source: "action",
+            severity: action.riskLevel === "high" ? "warning" : "info",
+            impactJson: {
+              actionId: input.actionId,
+              riskLevel: action.riskLevel,
+              deltas: actionResult.deltas,
+              tick: {
+                momentum: tick.momentum,
+                attention: tick.attention,
+                sellPressure: tick.sellPressure
+              }
             }
           }
+        })
+      ]);
+    await Promise.all([
+      publishRealtimeEvent({
+        type: "TOKEN_TICK",
+        tokenId: token.id,
+        seasonId: token.seasonId,
+        price: finalState.simulatedPrice,
+        marketCap: finalState.simulatedMarketCap,
+        volume: finalState.simulatedVolume,
+        holders: finalState.simulatedHolders,
+        hype: finalState.hype,
+        trust: finalState.trust,
+        createdAt: tokenTick.createdAt.toISOString()
+      }),
+      publishRealtimeEvent({
+        type: "TOKEN_EVENT",
+        tokenId: token.id,
+        seasonId: token.seasonId,
+        event: {
+          id: event.id,
+          title: event.title,
+          description: event.description,
+          severity: event.severity
         }
-      })
+      }),
+      tick.graduationType
+        ? publishRealtimeEvent({
+            type: "GRADUATION_ALERT",
+            tokenId: token.id,
+            seasonId: token.seasonId,
+            graduationType: tick.graduationType,
+            marketCap: finalState.simulatedMarketCap
+          })
+        : Promise.resolve()
     ]);
-    return { action, actionResult, event, playerAction, tick, tokenTick };
+    return {
+      action,
+      actionResult,
+      event,
+      playerAction,
+      tick,
+      tokenTick,
+      updatedToken
+    };
   } catch (error) {
     if (error instanceof Error && error.message.includes("Unique constraint")) {
       throw new ActionLoopError("That action was already applied.");

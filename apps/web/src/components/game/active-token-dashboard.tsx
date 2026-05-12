@@ -21,6 +21,7 @@ import {
 } from "recharts";
 import { Badge, Button, Panel, StatBar } from "@meme-foundry/ui";
 import { executeTokenAction } from "@/app/launch/[id]/manage/actions";
+import { RealtimeStatus } from "@/components/realtime/realtime-status";
 import type { ActionDefinition } from "@meme-foundry/game-engine";
 
 type StatGroup = {
@@ -86,6 +87,8 @@ type DashboardProps = {
   message?: string | null;
   error?: string | null;
   nonceSeed: string;
+  seasonId?: string | null;
+  userId: string;
 };
 
 function fmtNumber(value: number) {
@@ -206,7 +209,9 @@ export function ActiveTokenDashboard({
   pinnedEvent,
   message,
   error,
-  nonceSeed
+  nonceSeed,
+  seasonId,
+  userId
 }: DashboardProps) {
   const flatActions = actionsByIntent.flatMap((group) => group.actions);
   const pinnedAction = pinnedEvent?.actionId
@@ -449,6 +454,11 @@ export function ActiveTokenDashboard({
         </main>
 
         <aside className="grid content-start gap-4">
+          <RealtimeStatus
+            seasonId={seasonId}
+            tokenId={token.id}
+            userId={userId}
+          />
           {pinnedEvent ? (
             <Panel
               className="border-amber-300/25 bg-amber-300/10"

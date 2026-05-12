@@ -1,5 +1,6 @@
 import { prisma } from "../packages/db/src/index";
 import { refreshNarrativesAndLeaderboards } from "../apps/web/src/lib/server/world-state";
+import { closeRealtimePublisher } from "@meme-foundry/realtime";
 
 async function main() {
   const season = await prisma.season.findFirstOrThrow({
@@ -42,4 +43,7 @@ main()
     console.error(error);
     process.exitCode = 1;
   })
-  .finally(async () => prisma.$disconnect());
+  .finally(async () => {
+    await closeRealtimePublisher();
+    await prisma.$disconnect();
+  });

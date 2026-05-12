@@ -5,6 +5,10 @@ import {
   tokenUpdateFromState
 } from "../apps/web/src/lib/game-state";
 import { simulateTokenTick } from "@meme-foundry/game-engine";
+import {
+  closeRealtimePublisher,
+  publishRealtimeEvent
+} from "@meme-foundry/realtime";
 
 async function main() {
   const tokens = await prisma.launchToken.findMany({
@@ -41,7 +45,7 @@ async function main() {
       seed: `${token.id}:${Date.now()}`,
       minutesElapsed: 1
     });
-    await prisma.$transaction([
+    const [, tokenTick] = await prisma.$transaction([
       prisma.launchToken.update({
         where: { id: token.id },
         data: {
@@ -62,6 +66,27 @@ async function main() {
         }
       })
     ]);
+    await publishRealtimeEvent({
+      type: "TOKEN_TICK",
+      tokenId: token.id,
+      seasonId: token.seasonId,
+      price: tick.after.simulatedPrice,
+      marketCap: tick.after.simulatedMarketCap,
+      volume: tick.after.simulatedVolume,
+      holders: tick.after.simulatedHolders,
+      hype: tick.after.hype,
+      trust: tick.after.trust,
+      createdAt: tokenTick.createdAt.toISOString()
+    });
+    if (tick.graduationType) {
+      await publishRealtimeEvent({
+        type: "GRADUATION_ALERT",
+        tokenId: token.id,
+        seasonId: token.seasonId,
+        graduationType: tick.graduationType,
+        marketCap: tick.after.simulatedMarketCap
+      });
+    }
     if (tick.graduationType || tick.failure) {
       await prisma.gameEvent.create({
         data: {
@@ -94,5 +119,6 @@ main()
     process.exitCode = 1;
   })
   .finally(async () => {
+    await closeRealtimePublisher();
     await prisma.$disconnect();
   });

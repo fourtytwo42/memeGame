@@ -152,6 +152,8 @@ export default async function ManageTokenPage({
               }
             : null
         }
+        seasonId={token.seasonId}
+        userId={session.user.id}
         recommendedActionId={recommended.id}
         statGroups={statGroups(token)}
         token={{
