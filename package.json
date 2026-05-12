@@ -20,6 +20,7 @@
     "test:browser-audit": "tsx scripts/stage15-browser-audit.ts",
     "test:a11y": "tsx scripts/stage15-a11y.ts",
     "test:stress": "tsx scripts/stage15-stress.ts",
+    "test:soak": "tsx scripts/stage15-soak.ts",
     "test:scale": "tsx scripts/stage8-scale-check.ts",
     "test:release": "pnpm verify && pnpm test:browser-audit && pnpm test:a11y && pnpm test:stress && pnpm test:scale && pnpm test:realtime-load && pnpm test:support-burst && pnpm test:crew-scale && pnpm test:ai-smoke && pnpm test:ai-text-burst && pnpm test:image-burst && pnpm test:backup-restore",
     "prisma:validate": "node scripts/prisma-validate.mjs",

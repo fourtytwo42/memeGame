@@ -182,7 +182,11 @@ Before declaring host-native share-ready:
 - Run browser-use visual and playtest audits.
 - Run stress/scale while the browser remains usable.
 - Run a 30-minute host-native soak and record service logs, health, queue
-  counts, and browser-use checks during the soak.
+  counts, and browser-use checks during the soak:
+
+```bash
+SOAK_MINUTES=30 SOAK_INTERVAL_SECONDS=60 pnpm test:soak
+```
 
 ## Final Release Checklist
 

@@ -78,6 +78,9 @@ Observed results:
 - `pnpm audit --audit-level moderate` passes with no known vulnerabilities
   after pnpm workspace overrides for patched `@hono/node-server` and `postcss`
   transitive versions.
+- `pnpm test:soak` runs `scripts/stage15-soak.ts`; a short smoke run passed
+  with stable web/realtime health and failed-image count held at the starting
+  degraded-state baseline.
 - `test:release` now includes `pnpm test:a11y`.
 - Fallback season commentary clamps generated titles to the schema limit after
   a long synthetic season name exposed the issue during release verification.
@@ -111,6 +114,7 @@ For every captured route, the browser-use DOM snapshot confirmed:
 - `docs/RELEASE_RUNBOOK.md` now covers host-native preflight,
   verification, service install/restart, health checks, backup/restore,
   rollback, soak/scale evidence, and final release checklist.
+- A full 30-minute soak still needs to be run and recorded.
 - Complete browser-use visual audits/playtests for all major flows.
 - Complete soak, security, dependency, backup/restore, scale, degraded-mode,
   and release evidence.
