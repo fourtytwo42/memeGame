@@ -79,6 +79,30 @@ Observed results:
 - Fallback season commentary clamps generated titles to the schema limit after
   a long synthetic season name exposed the issue during release verification.
 
+## Browser-Use Visual Audit
+
+Browser-use drove the Codex in-app browser against the live VM app at
+`http://192.168.50.209:3000` and captured viewport screenshots for:
+
+- `/`
+- `/play`
+- `/launch/new`
+- `/launch/cmp23mmgi000rhqoa9vwesunj/manage`
+- `/token/cmp23mmgi000rhqoa9vwesunj`
+- `/founder/founder`
+- `/crews/stage11-scale-crew-25`
+- `/seasons/scale-season`
+- `/leaderboard?tab=holders`
+- `/admin`
+
+Screenshots are stored under `docs/evidence/stage15-browser-use/`.
+
+For every captured route, the browser-use DOM snapshot confirmed:
+
+- primary navigation is present in the left rail;
+- top/bottom primary navigation is absent;
+- the page loads nonblank content.
+
 ## Remaining Stage 15 Work
 
 - Complete browser-use visual audits/playtests for all major flows.
