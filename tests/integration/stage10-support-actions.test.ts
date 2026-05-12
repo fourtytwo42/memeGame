@@ -7,19 +7,39 @@ import {
 } from "../../apps/web/src/lib/server/support-actions";
 
 async function supportPair(actionType: string) {
-  const token = await prisma.launchToken.findFirstOrThrow({
-    where: { status: "live" },
-    orderBy: { updatedAt: "desc" }
+  const suffix = `${actionType.toLowerCase()}-${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
+  const season = await prisma.season.findFirstOrThrow({
+    where: { status: "active" }
   });
-  const user = await prisma.user.findFirstOrThrow({
-    where: { id: { not: token.userId }, status: "active" }
-  });
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { supportEnergy: 100 }
-  });
-  await prisma.supportAction.deleteMany({
-    where: { userId: user.id, tokenId: token.id, actionType }
+  const [founder, user] = await Promise.all([
+    prisma.user.create({
+      data: {
+        email: `support-founder-${suffix}@example.com`,
+        username: `support_founder_${suffix.replace(/[^a-z0-9_]/gi, "_")}`,
+        status: "active"
+      }
+    }),
+    prisma.user.create({
+      data: {
+        email: `support-user-${suffix}@example.com`,
+        username: `support_user_${suffix.replace(/[^a-z0-9_]/gi, "_")}`,
+        status: "active",
+        supportEnergy: 100
+      }
+    })
+  ]);
+  const token = await prisma.launchToken.create({
+    data: {
+      userId: founder.id,
+      seasonId: season.id,
+      name: `Support Target ${suffix}`,
+      ticker: `S${Date.now().toString().slice(-5)}`,
+      narrative: "AI Mascots",
+      narrativeSlug: "ai-mascots",
+      status: "live"
+    }
   });
   return { token, user };
 }
@@ -53,9 +73,7 @@ describe("stage 10 support actions", () => {
   });
 
   it("blocks self-support", async () => {
-    const token = await prisma.launchToken.findFirstOrThrow({
-      where: { status: "live" }
-    });
+    const { token } = await supportPair("MAKE_MEME");
     await expect(
       executeSupportActionForUser({
         userId: token.userId,

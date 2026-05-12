@@ -1,8 +1,16 @@
 import { redirect } from "next/navigation";
+import {
+  hideReportTargetAction,
+  resolveReportAction,
+  retryImageJobAction,
+  updateNarrativeAction,
+  updateSeasonAction
+} from "@/app/admin/actions";
 import { auth } from "@/auth";
+import { getOpsHealth } from "@/lib/server/ops-health";
 import { AppShell } from "@/components/shell/app-shell";
 import { prisma } from "@meme-foundry/db";
-import { Badge, Panel } from "@meme-foundry/ui";
+import { Badge, Button, Panel } from "@meme-foundry/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -11,10 +19,30 @@ export default async function AdminPage() {
   if (!session?.user) redirect("/signin");
   if (session.user.role !== "admin") redirect("/play");
 
-  const [users, tokens, seasons, aiLogs, imageJobs] = await Promise.all([
+  const [
+    users,
+    tokens,
+    seasonCount,
+    editableSeasons,
+    narratives,
+    aiLogs,
+    imageJobs,
+    reports,
+    actions,
+    health
+  ] = await Promise.all([
     prisma.user.count(),
     prisma.launchToken.count(),
     prisma.season.count(),
+    prisma.season.findMany({
+      orderBy: [{ status: "asc" }, { startsAt: "desc" }],
+      take: 8
+    }),
+    prisma.narrativeMeta.findMany({
+      orderBy: [{ season: { startsAt: "desc" } }, { heat: "desc" }],
+      take: 12,
+      include: { season: true }
+    }),
     prisma.aiGeneratedContent.findMany({
       orderBy: { createdAt: "desc" },
       take: 12
@@ -23,7 +51,19 @@ export default async function AdminPage() {
       orderBy: { updatedAt: "desc" },
       take: 12,
       include: { token: true }
-    })
+    }),
+    prisma.report.findMany({
+      where: { status: "open" },
+      orderBy: { createdAt: "desc" },
+      take: 12,
+      include: { reporter: true }
+    }),
+    prisma.adminAction.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      include: { actor: true }
+    }),
+    getOpsHealth()
   ]);
 
   return (
@@ -42,8 +82,233 @@ export default async function AdminPage() {
           >
             <Metric label="Users" value={users} />
             <Metric label="Tokens" value={tokens} />
-            <Metric label="Seasons" value={seasons} />
+            <Metric label="Seasons" value={seasonCount} />
           </dl>
+        </Panel>
+
+        <Panel data-testid="admin-health-panel">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                Operations
+              </p>
+              <h2 className="text-xl font-black text-white">
+                Health and scale
+              </h2>
+            </div>
+            <Badge tone={health.db.ok && health.redis.ok ? "good" : "warn"}>
+              {health.db.ok && health.redis.ok ? "healthy" : "degraded"}
+            </Badge>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-4">
+            <HealthMetric
+              label="Postgres"
+              value={health.db.detail ?? "ok"}
+              ok={health.db.ok}
+            />
+            <HealthMetric
+              label="Redis"
+              value={health.redis.detail ?? "ok"}
+              ok={health.redis.ok}
+            />
+            <HealthMetric
+              label="Realtime"
+              value={health.realtime.detail ?? "ok"}
+              ok={health.realtime.ok}
+            />
+            <HealthMetric
+              label="AI service"
+              value={health.ai.detail ?? "ok"}
+              ok={health.ai.ok}
+            />
+            <HealthMetric
+              label="Image backend"
+              value={health.image.detail ?? "ok"}
+              ok={health.image.ok}
+            />
+          </div>
+          <dl className="mt-4 grid gap-3 md:grid-cols-4">
+            <Metric label="Sessions" value={health.sessions} />
+            <Metric label="Socket clients" value={health.socketClients} />
+            <Metric label="Queued images" value={health.queuedImages} />
+            <Metric label="Failed images" value={health.failedImages} />
+            <Metric label="AI fallbacks/hr" value={health.recentAiErrors} />
+          </dl>
+          <dl className="mt-4 grid gap-3 md:grid-cols-4">
+            <Metric
+              label="Image queue wait"
+              value={health.queueStats.imageWaiting}
+            />
+            <Metric
+              label="Image active"
+              value={health.queueStats.imageActive}
+            />
+            <Metric label="AI queue wait" value={health.queueStats.aiWaiting} />
+            <Metric
+              label="Oldest image lag"
+              value={health.queueStats.oldestQueuedImageSeconds}
+            />
+          </dl>
+        </Panel>
+
+        <Panel data-testid="admin-season-editor">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                World control
+              </p>
+              <h2 className="text-xl font-black text-white">Season editor</h2>
+            </div>
+            <Badge tone="neutral">{editableSeasons.length} recent</Badge>
+          </div>
+          <div className="mt-4 grid gap-3">
+            {editableSeasons.map((season) => (
+              <form
+                action={updateSeasonAction}
+                className="grid gap-3 rounded-md border border-white/10 bg-slate-950/55 p-4 lg:grid-cols-[1fr_10rem_8rem]"
+                key={season.id}
+              >
+                <input name="seasonId" type="hidden" value={season.id} />
+                <label className="grid gap-2 text-sm font-bold text-slate-200">
+                  Name
+                  <input
+                    className="min-h-10 rounded-md border border-white/10 bg-slate-950 px-3 text-sm text-white"
+                    defaultValue={season.name}
+                    name="name"
+                  />
+                </label>
+                <label className="grid gap-2 text-sm font-bold text-slate-200">
+                  Status
+                  <select
+                    className="min-h-10 rounded-md border border-white/10 bg-slate-950 px-3 text-sm text-white"
+                    defaultValue={season.status}
+                    name="status"
+                  >
+                    <option value="upcoming">upcoming</option>
+                    <option value="active">active</option>
+                    <option value="complete">complete</option>
+                    <option value="archived">archived</option>
+                  </select>
+                </label>
+                <Button className="self-end" type="submit">
+                  Save
+                </Button>
+              </form>
+            ))}
+          </div>
+        </Panel>
+
+        <Panel data-testid="admin-narrative-editor">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                Meta tuning
+              </p>
+              <h2 className="text-xl font-black text-white">
+                Narrative editor
+              </h2>
+            </div>
+            <Badge tone="neutral">{narratives.length} tracked</Badge>
+          </div>
+          <div className="mt-4 grid gap-3">
+            {narratives.map((narrative) => (
+              <form
+                action={updateNarrativeAction}
+                className="grid gap-3 rounded-md border border-white/10 bg-slate-950/55 p-4 md:grid-cols-4 xl:grid-cols-[1.4fr_repeat(4,8rem)_7rem]"
+                key={narrative.id}
+              >
+                <input name="narrativeId" type="hidden" value={narrative.id} />
+                <div className="md:col-span-4 xl:col-span-1">
+                  <p className="font-black text-white">{narrative.name}</p>
+                  <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+                    {narrative.season.name}
+                  </p>
+                </div>
+                <NumberField
+                  defaultValue={narrative.heat}
+                  label="Heat"
+                  name="heat"
+                />
+                <NumberField
+                  defaultValue={narrative.memePotential}
+                  label="Meme"
+                  name="memePotential"
+                />
+                <NumberField
+                  defaultValue={narrative.saturation}
+                  label="Saturation"
+                  name="saturation"
+                />
+                <NumberField
+                  defaultValue={narrative.fatigue}
+                  label="Fatigue"
+                  name="fatigue"
+                />
+                <Button className="self-end" type="submit">
+                  Save
+                </Button>
+              </form>
+            ))}
+          </div>
+        </Panel>
+
+        <Panel data-testid="admin-reports">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                Moderation
+              </p>
+              <h2 className="text-xl font-black text-white">Reports queue</h2>
+            </div>
+            <Badge tone={reports.length ? "warn" : "good"}>
+              {reports.length} open
+            </Badge>
+          </div>
+          <div className="mt-4 grid gap-3">
+            {reports.map((report) => (
+              <div
+                className="rounded-md border border-white/10 bg-slate-950/55 p-4"
+                key={report.id}
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="font-black text-white">
+                      {report.category} / {report.targetType}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-400">
+                      Target {report.targetId} / reporter{" "}
+                      {report.reporter?.username ?? "anonymous"}
+                    </p>
+                    {report.detail ? (
+                      <p className="mt-2 text-sm text-slate-300">
+                        {report.detail}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <form action={hideReportTargetAction}>
+                      <input name="reportId" type="hidden" value={report.id} />
+                      <Button tone="danger" type="submit">
+                        Hide target
+                      </Button>
+                    </form>
+                    <form action={resolveReportAction}>
+                      <input name="reportId" type="hidden" value={report.id} />
+                      <input name="resolution" type="hidden" value="reviewed" />
+                      <Button tone="secondary" type="submit">
+                        Resolve
+                      </Button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {reports.length === 0 ? (
+              <p className="rounded-md border border-dashed border-white/15 bg-slate-950/45 p-4 text-sm text-slate-400">
+                No open reports.
+              </p>
+            ) : null}
+          </div>
         </Panel>
 
         <Panel data-testid="admin-ai-logs">
@@ -130,7 +395,21 @@ export default async function AdminPage() {
                     </td>
                     <td className="px-3 py-3 text-slate-300">{job.attempts}</td>
                     <td className="rounded-r-md px-3 py-3 text-amber-200">
-                      {job.error ?? "none"}
+                      <div className="flex items-center justify-between gap-3">
+                        <span>{job.error ?? "none"}</span>
+                        {["failed", "retrying"].includes(job.status) ? (
+                          <form action={retryImageJobAction}>
+                            <input
+                              name="imageJobId"
+                              type="hidden"
+                              value={job.id}
+                            />
+                            <Button tone="secondary" type="submit">
+                              Retry
+                            </Button>
+                          </form>
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -143,8 +422,74 @@ export default async function AdminPage() {
             ) : null}
           </div>
         </Panel>
+
+        <Panel data-testid="admin-action-log">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+            Audit
+          </p>
+          <h2 className="mt-1 text-xl font-black text-white">
+            Recent admin actions
+          </h2>
+          <div className="mt-4 grid gap-2">
+            {actions.map((action) => (
+              <div
+                className="rounded-md bg-slate-950/55 px-3 py-2 text-sm text-slate-300"
+                key={action.id}
+              >
+                <span className="font-bold text-white">
+                  {action.actor.username}
+                </span>{" "}
+                {action.actionType} on {action.targetType}
+              </div>
+            ))}
+          </div>
+        </Panel>
       </div>
     </AppShell>
+  );
+}
+
+function NumberField({
+  defaultValue,
+  label,
+  name
+}: {
+  defaultValue: number;
+  label: string;
+  name: string;
+}) {
+  return (
+    <label className="grid gap-2 text-sm font-bold text-slate-200">
+      {label}
+      <input
+        className="min-h-10 rounded-md border border-white/10 bg-slate-950 px-3 text-sm text-white"
+        defaultValue={defaultValue}
+        max={100}
+        min={0}
+        name={name}
+        type="number"
+      />
+    </label>
+  );
+}
+
+function HealthMetric({
+  label,
+  ok,
+  value
+}: {
+  label: string;
+  ok: boolean;
+  value: string | number;
+}) {
+  return (
+    <div className="rounded-md border border-white/10 bg-slate-950/50 p-4">
+      <Badge tone={ok ? "good" : "warn"}>{ok ? "ok" : "degraded"}</Badge>
+      <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+        {label}
+      </p>
+      <p className="mt-1 break-words text-sm font-bold text-white">{value}</p>
+    </div>
   );
 }
 

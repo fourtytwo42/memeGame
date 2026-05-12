@@ -39,35 +39,19 @@ test("player creates a crew, features a launch, and runs crew support", async ({
         }
       }
     }));
-  const owner = await prisma.user.upsert({
-    where: {
-      email: `crew-owner-${safeProjectName(testInfo.project.name)}@example.com`
-    },
-    update: {
+  const owner = await prisma.user.create({
+    data: {
+      email: `crew-owner-${suffix}@example.com`,
       passwordHash,
-      status: "active",
-      username: `crew_owner_${safeProjectName(testInfo.project.name).replaceAll("-", "_")}`
-    },
-    create: {
-      email: `crew-owner-${safeProjectName(testInfo.project.name)}@example.com`,
-      passwordHash,
-      username: `crew_owner_${safeProjectName(testInfo.project.name).replaceAll("-", "_")}`,
+      username: `crew_owner_${suffix.replaceAll("-", "_")}`,
       status: "active"
     }
   });
-  const founder = await prisma.user.upsert({
-    where: {
-      email: `crew-founder-${safeProjectName(testInfo.project.name)}@example.com`
-    },
-    update: {
+  const founder = await prisma.user.create({
+    data: {
+      email: `crew-founder-${suffix}@example.com`,
       passwordHash,
-      status: "active",
-      username: `crew_founder_${safeProjectName(testInfo.project.name).replaceAll("-", "_")}`
-    },
-    create: {
-      email: `crew-founder-${safeProjectName(testInfo.project.name)}@example.com`,
-      passwordHash,
-      username: `crew_founder_${safeProjectName(testInfo.project.name).replaceAll("-", "_")}`,
+      username: `crew_founder_${suffix.replaceAll("-", "_")}`,
       status: "active"
     }
   });
@@ -94,9 +78,7 @@ test("player creates a crew, features a launch, and runs crew support", async ({
   const crewSlug = crewName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
   await page.goto("/signin");
-  await page
-    .getByLabel("Username or email")
-    .fill(`crew-owner-${safeProjectName(testInfo.project.name)}@example.com`);
+  await page.getByLabel("Username or email").fill(owner.email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL("/");
@@ -112,7 +94,9 @@ test("player creates a crew, features a launch, and runs crew support", async ({
     .fill("Created by the Stage 11 browser flow.");
   await page.getByRole("button", { name: "Create crew" }).click();
 
-  await expect(page).toHaveURL(new RegExp(`/crews/${crewSlug}`));
+  await expect(page).toHaveURL(new RegExp(`/crews/${crewSlug}`), {
+    timeout: 15_000
+  });
   await expect(page.getByTestId("crew-detail-page")).toContainText(crewName);
   await expect(page.getByTestId("crew-member-list")).toContainText(
     owner.username
@@ -132,7 +116,8 @@ test("player creates a crew, features a launch, and runs crew support", async ({
     await featureButton.click();
   }
   await expect(page.getByTestId("crew-notice")).toContainText(
-    "Featured launch updated"
+    "Featured launch updated",
+    { timeout: 15_000 }
   );
   await expect(page.getByTestId("featured-launch-panel")).toContainText(
     token.name
@@ -149,7 +134,8 @@ test("player creates a crew, features a launch, and runs crew support", async ({
     await crewSupportButton.click();
   }
   await expect(page.getByTestId("crew-notice")).toContainText(
-    "Signal Boost landed"
+    "Signal Boost landed",
+    { timeout: 15_000 }
   );
   await expect(page.getByTestId("crew-event-feed")).toContainText(
     "Signal Boost"

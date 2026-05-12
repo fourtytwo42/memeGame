@@ -69,7 +69,7 @@ export async function refreshNarrativesAndLeaderboards(seasonId: string) {
   for (const token of tokens) {
     const score = calculateScore(tokenToEngineState(token));
     if (score !== token.score) {
-      await prisma.launchToken.update({
+      await prisma.launchToken.updateMany({
         where: { id: token.id },
         data: { score }
       });

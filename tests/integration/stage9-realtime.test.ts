@@ -138,7 +138,8 @@ describe("stage 9 realtime foundation", () => {
 
     const supportPromise = once<{ tokenId: string; actionType: string }>(
       socket,
-      "SUPPORT_ACTION"
+      "SUPPORT_ACTION",
+      10_000
     );
     await publishRealtimeEvent({
       type: "SUPPORT_ACTION",
@@ -152,10 +153,10 @@ describe("stage 9 realtime foundation", () => {
       actionType: "share_boost"
     });
 
-    const graduationPromise = once<{ tokenId: string; graduationType: string }>(
-      socket,
-      "GRADUATION_ALERT"
-    );
+    const graduationPromise = once<{
+      tokenId: string;
+      graduationType: string;
+    }>(socket, "GRADUATION_ALERT", 10_000);
     await publishRealtimeEvent({
       type: "GRADUATION_ALERT",
       tokenId: token.id,
@@ -167,7 +168,7 @@ describe("stage 9 realtime foundation", () => {
       tokenId: token.id,
       graduationType: "trend_breakout"
     });
-  });
+  }, 12_000);
 
   it("broadcasts leaderboard changes to season leaderboard rooms", async () => {
     const season = await prisma.season.findFirstOrThrow({

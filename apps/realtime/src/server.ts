@@ -41,9 +41,16 @@ async function findActiveUser(userId: string | null | undefined) {
 export function createRealtimeServer(
   options: { useRedisAdapter?: boolean } = {}
 ) {
+  let activeSocketClients = 0;
   const httpServer = createServer((_req, res) => {
     res.writeHead(200, { "content-type": "application/json" });
-    res.end(JSON.stringify({ ok: true, service: "meme-foundry-realtime" }));
+    res.end(
+      JSON.stringify({
+        ok: true,
+        service: "meme-foundry-realtime",
+        socketClients: activeSocketClients
+      })
+    );
   });
   const io = new Server(httpServer, {
     cors: {
@@ -142,6 +149,10 @@ export function createRealtimeServer(
   });
 
   io.on("connection", (socket) => {
+    activeSocketClients += 1;
+    socket.on("disconnect", () => {
+      activeSocketClients = Math.max(0, activeSocketClients - 1);
+    });
     socket.emit("REALTIME_READY", {
       connected: true,
       user: socket.user

@@ -1,0 +1,18 @@
+[Unit]
+Description=Meme Foundry local AI text service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hendo420
+WorkingDirectory=/home/hendo420/memeGame
+EnvironmentFile=/home/hendo420/memeGame/.env
+Environment=NODE_ENV=production
+Environment=AI_SERVICE_PORT=3002
+ExecStart=/usr/bin/bash -lc 'corepack pnpm --filter @meme-foundry/ai-service start'
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

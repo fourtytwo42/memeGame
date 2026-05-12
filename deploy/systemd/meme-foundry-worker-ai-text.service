@@ -1,0 +1,17 @@
+[Unit]
+Description=Meme Foundry AI text worker
+After=network-online.target postgresql.service redis-server.service meme-foundry-ai-service.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hendo420
+WorkingDirectory=/home/hendo420/memeGame
+EnvironmentFile=/home/hendo420/memeGame/.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/bash -lc 'corepack pnpm --filter @meme-foundry/worker-ai-text start'
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

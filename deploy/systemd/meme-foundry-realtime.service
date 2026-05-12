@@ -1,0 +1,18 @@
+[Unit]
+Description=Meme Foundry realtime service
+After=network-online.target postgresql.service redis-server.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hendo420
+WorkingDirectory=/home/hendo420/memeGame
+EnvironmentFile=/home/hendo420/memeGame/.env
+Environment=NODE_ENV=production
+Environment=REALTIME_PORT=3001
+ExecStart=/usr/bin/bash -lc 'corepack pnpm --filter @meme-foundry/realtime-app start'
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
