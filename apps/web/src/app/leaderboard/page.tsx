@@ -81,15 +81,15 @@ export default async function LeaderboardPage({
         </Panel>
 
         <Panel data-testid="leaderboard-tabs">
-          <div className="grid gap-4 md:grid-cols-[13rem_1fr] md:items-start">
+          <div className="grid gap-4 sm:grid-cols-[13rem_1fr] sm:items-start">
             <nav
               aria-label="Leaderboard categories"
-              className="flex gap-2 overflow-x-auto md:sticky md:top-4 md:grid md:overflow-visible"
+              className="flex gap-2 overflow-x-auto sm:sticky sm:top-4 sm:grid sm:overflow-visible"
               data-testid="leaderboard-side-menu"
             >
               {tabs.map(([id, label]) => (
                 <Link
-                  className={`min-h-10 shrink-0 rounded-md px-4 py-2 text-sm font-black md:flex md:items-center md:border md:px-3 ${category === id ? "bg-amber-300 text-slate-950 md:border-amber-300" : "bg-white/[0.04] text-slate-200 hover:bg-white/10 md:border-white/10 md:hover:border-amber-300/40"}`}
+                  className={`min-h-10 shrink-0 rounded-md px-4 py-2 text-sm font-black sm:flex sm:items-center sm:border sm:px-3 ${category === id ? "bg-amber-300 text-slate-950 sm:border-amber-300" : "bg-white/[0.04] text-slate-200 hover:bg-white/10 sm:border-white/10 sm:hover:border-amber-300/40"}`}
                   href={`/leaderboard?tab=${id}` as Route}
                   key={id}
                 >
@@ -103,7 +103,7 @@ export default async function LeaderboardPage({
                 if (!token) return null;
                 return (
                   <Link
-                    className="grid gap-3 rounded-lg border border-white/10 bg-slate-950/55 p-4 hover:border-amber-300/50 md:grid-cols-[4rem_1fr_10rem] md:items-center"
+                    className="grid gap-3 rounded-lg border border-white/10 bg-slate-950/55 p-4 hover:border-amber-300/50 sm:grid-cols-[4rem_1fr_10rem] sm:items-center"
                     href={`/token/${token.id}` as Route}
                     key={snapshot.id}
                   >
@@ -112,7 +112,7 @@ export default async function LeaderboardPage({
                         {snapshot.rank}
                       </span>
                       {snapshot.rank && snapshot.rank <= 3 ? (
-                        <Medal className="text-amber-300 md:mt-2" size={20} />
+                        <Medal className="text-amber-300 sm:mt-2" size={20} />
                       ) : null}
                     </div>
                     <div>

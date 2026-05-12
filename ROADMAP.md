@@ -348,9 +348,9 @@ Build the durable visual foundation before feature screens multiply.
   - chroma-key removal workflow documentation;
   - icon-first control and tooltip/popover patterns.
 - Create app shell:
-  - desktop nav;
+  - tablet and desktop left-side nav rail matching the reference screens;
   - mobile bottom nav;
-  - top status bar;
+  - phone top status bar;
   - active season display;
   - current user/founder display.
 - Add accessibility patterns and visible focus states.

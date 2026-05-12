@@ -48,9 +48,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       : primaryNav;
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(132,204,22,0.16),transparent_30rem),#07090d] pb-24 text-slate-100 md:pb-0 md:grid md:grid-cols-[14rem_1fr]">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(132,204,22,0.16),transparent_30rem),#07090d] pb-24 text-slate-100 sm:pb-0 sm:grid sm:grid-cols-[14rem_1fr]">
       <aside
-        className="fixed inset-y-0 left-0 z-50 hidden w-56 border-r border-white/10 bg-slate-950/92 px-4 py-4 backdrop-blur md:flex md:flex-col"
+        className="fixed inset-y-0 left-0 z-50 hidden w-56 border-r border-white/10 bg-slate-950/92 px-4 py-4 backdrop-blur sm:flex sm:flex-col"
         data-testid="desktop-left-nav"
       >
         <Link className="grid gap-1 px-2" href="/play">
@@ -122,7 +122,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <header
-        className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/90 backdrop-blur md:hidden"
+        className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/90 backdrop-blur sm:hidden"
         data-testid="app-shell-topbar"
       >
         <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
@@ -173,7 +173,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <div className="min-w-0 md:col-start-2">
+      <div className="min-w-0 sm:col-start-2">
         <div className="mx-auto max-w-[94rem] px-4 py-4 sm:px-6 lg:px-6 xl:px-8">
           {children}
         </div>
@@ -181,7 +181,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
       <nav
         aria-label="Mobile primary"
-        className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-white/10 bg-slate-950/95 px-2 py-2 backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-white/10 bg-slate-950/95 px-2 py-2 backdrop-blur sm:hidden"
         data-testid="mobile-bottom-nav"
       >
         {primaryNav.slice(0, 5).map((item) => (
