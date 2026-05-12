@@ -275,21 +275,23 @@ export default async function PlayPage({ searchParams }: PlayProps) {
             <div className="grid gap-2">
               {leaders.map((leader, index) => (
                 <div
-                  className="flex items-center justify-between gap-3 rounded-md bg-slate-950/55 p-3"
+                  className="grid min-w-0 gap-3 rounded-md bg-slate-950/55 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
                   key={leader.id}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
                     <span className="grid size-7 place-items-center rounded-full bg-amber-300 text-sm font-black text-slate-950">
                       {index + 1}
                     </span>
-                    <div>
-                      <p className="font-black text-white">{leader.name}</p>
-                      <p className="text-xs text-slate-400">
+                    <div className="min-w-0">
+                      <p className="break-words font-black text-white">
+                        {leader.name}
+                      </p>
+                      <p className="break-words text-xs text-slate-400">
                         {leader.user.username}
                       </p>
                     </div>
                   </div>
-                  <span className="font-black text-pink-300">
+                  <span className="font-black text-pink-300 sm:text-right">
                     {leader.score.toLocaleString()}
                   </span>
                 </div>

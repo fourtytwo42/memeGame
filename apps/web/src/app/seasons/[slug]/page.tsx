@@ -159,16 +159,16 @@ export default async function SeasonDetailPage({ params }: SeasonDetailProps) {
               <div className="grid gap-3">
                 {season.tokens.map((token, index) => (
                   <Link
-                    className="rounded-md border border-white/10 bg-slate-950/55 p-3 hover:border-lime-300/40"
+                    className="block min-w-0 rounded-md border border-white/10 bg-slate-950/55 p-3 hover:border-lime-300/40"
                     href={`/token/${token.id}`}
                     key={token.id}
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="font-black text-white">
+                    <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                      <div className="min-w-0">
+                        <p className="break-words font-black text-white">
                           {index + 1}. {token.name}
                         </p>
-                        <p className="text-xs text-slate-400">
+                        <p className="break-words text-xs text-slate-400">
                           ${token.ticker} · {token.user.username}
                         </p>
                       </div>

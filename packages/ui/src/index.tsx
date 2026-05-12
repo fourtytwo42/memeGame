@@ -39,7 +39,7 @@ export function Panel({
   return (
     <section
       className={joinClasses(
-        "rounded-lg border border-white/10 bg-white/[0.045] p-4 shadow-xl shadow-black/15 sm:p-5",
+        "min-w-0 rounded-lg border border-white/10 bg-white/[0.045] p-4 shadow-xl shadow-black/15 sm:p-5",
         className
       )}
       {...props}

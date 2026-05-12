@@ -289,11 +289,11 @@ export default async function CrewDetailPage({
             <div className="grid gap-2">
               {crew.members.map((member) => (
                 <div
-                  className="flex items-center justify-between gap-3 rounded-md bg-slate-950/55 p-3"
+                  className="grid min-w-0 gap-2 rounded-md bg-slate-950/55 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
                   key={member.id}
                 >
-                  <div>
-                    <p className="font-black text-white">
+                  <div className="min-w-0">
+                    <p className="break-words font-black text-white">
                       {member.user.username}
                     </p>
                     <p className="text-xs text-slate-400">

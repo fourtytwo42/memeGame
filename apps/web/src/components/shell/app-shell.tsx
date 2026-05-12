@@ -48,7 +48,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       : primaryNav;
 
   return (
-    <main className="grid min-h-screen grid-cols-[4.5rem_1fr] bg-[radial-gradient(circle_at_top_left,rgba(132,204,22,0.16),transparent_30rem),#07090d] text-slate-100 sm:grid-cols-[14rem_1fr]">
+    <main className="grid min-h-screen grid-cols-[4.5rem_minmax(0,1fr)] bg-[radial-gradient(circle_at_top_left,rgba(132,204,22,0.16),transparent_30rem),#07090d] text-slate-100 sm:grid-cols-[14rem_minmax(0,1fr)]">
       <aside
         className="fixed inset-y-0 left-0 z-50 flex w-[4.5rem] flex-col border-r border-white/10 bg-slate-950/92 px-2 py-3 backdrop-blur sm:w-56 sm:px-4 sm:py-4"
         data-testid="desktop-left-nav"

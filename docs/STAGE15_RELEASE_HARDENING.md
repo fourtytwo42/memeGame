@@ -48,6 +48,16 @@ checks that fail on real release blockers.
     coverage, and manifest fields.
   - Is included in `pnpm test:release`.
 
+- `pnpm test:visual-audit`
+  - Runs `scripts/stage15-visual-audit.ts`.
+  - Signs in through the real UI and checks the same route set at mobile,
+    tablet, and desktop viewport sizes.
+  - Fails on blank/near-blank pages, missing main landmarks, hidden expected
+    content, or horizontal overflow.
+  - Saves screenshots to
+    `docs/evidence/stage15-responsive-visual-audit/`.
+  - Is included in `pnpm test:release`.
+
 ## UI Alignment
 
 - The app shell now keeps primary navigation in a left-side rail for every
@@ -97,6 +107,10 @@ Observed results:
 - Production asset pass now has 32 manifest entries across brand, narratives,
   tokens, statuses, NPCs, crews, share art, and empty/degraded states. Evidence
   is recorded in `docs/STAGE15_PRODUCTION_ASSETS.md`.
+- Responsive visual audit passed 11 routes across mobile, tablet, and desktop.
+  It caught and drove fixes for mobile shell/content min-width behavior,
+  `/play` leaderboard preview wrapping, `/crews/:slug` member rows, and
+  `/leaderboard` result cards.
 
 ## Browser-Use Visual Audit
 

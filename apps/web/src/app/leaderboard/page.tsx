@@ -81,7 +81,7 @@ export default async function LeaderboardPage({
         </Panel>
 
         <Panel data-testid="leaderboard-tabs">
-          <div className="grid grid-cols-[minmax(5.5rem,8rem)_1fr] items-start gap-3 sm:grid-cols-[13rem_1fr] sm:gap-4">
+          <div className="grid grid-cols-[4.75rem_minmax(0,1fr)] items-start gap-2 sm:grid-cols-[13rem_minmax(0,1fr)] sm:gap-4">
             <nav
               aria-label="Leaderboard categories"
               className="sticky top-3 grid gap-2"
@@ -89,7 +89,7 @@ export default async function LeaderboardPage({
             >
               {tabs.map(([id, label]) => (
                 <Link
-                  className={`flex min-h-10 items-center rounded-md border px-2 py-2 text-xs font-black sm:px-3 sm:text-sm ${category === id ? "border-amber-300 bg-amber-300 text-slate-950" : "border-white/10 bg-white/[0.04] text-slate-200 hover:border-amber-300/40 hover:bg-white/10"}`}
+                  className={`flex min-h-10 items-center break-words rounded-md border px-2 py-2 text-xs font-black leading-4 sm:px-3 sm:text-sm ${category === id ? "border-amber-300 bg-amber-300 text-slate-950" : "border-white/10 bg-white/[0.04] text-slate-200 hover:border-amber-300/40 hover:bg-white/10"}`}
                   href={`/leaderboard?tab=${id}` as Route}
                   key={id}
                 >
@@ -97,13 +97,16 @@ export default async function LeaderboardPage({
                 </Link>
               ))}
             </nav>
-            <div className="grid gap-3" data-testid="leaderboard-results">
+            <div
+              className="grid min-w-0 gap-3"
+              data-testid="leaderboard-results"
+            >
               {snapshots.map((snapshot) => {
                 const token = tokenById.get(snapshot.entityId);
                 if (!token) return null;
                 return (
                   <Link
-                    className="grid gap-3 rounded-lg border border-white/10 bg-slate-950/55 p-4 hover:border-amber-300/50 sm:grid-cols-[4rem_1fr_10rem] sm:items-center"
+                    className="grid min-w-0 gap-3 rounded-lg border border-white/10 bg-slate-950/55 p-3 hover:border-amber-300/50 sm:grid-cols-[4rem_minmax(0,1fr)_10rem] sm:items-center sm:p-4"
                     href={`/token/${token.id}` as Route}
                     key={snapshot.id}
                   >
@@ -115,9 +118,9 @@ export default async function LeaderboardPage({
                         <Medal className="text-amber-300 sm:mt-2" size={20} />
                       ) : null}
                     </div>
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-xl font-black text-white">
+                    <div className="min-w-0">
+                      <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <h2 className="min-w-0 break-words text-lg font-black text-white sm:text-xl">
                           {token.name}
                         </h2>
                         <Badge>${token.ticker}</Badge>
@@ -129,12 +132,12 @@ export default async function LeaderboardPage({
                           {token.status}
                         </Badge>
                       </div>
-                      <p className="mt-1 text-sm text-slate-400">
+                      <p className="mt-1 break-words text-sm text-slate-400">
                         Founder {token.user.username}
                         {token.crew ? ` · Crew ${token.crew.name}` : ""}
                       </p>
                     </div>
-                    <div className="rounded-md bg-slate-900/80 p-3 text-right">
+                    <div className="min-w-0 rounded-md bg-slate-900/80 p-3 text-left sm:text-right">
                       <p className="text-xs font-bold uppercase text-slate-400">
                         {tabs.find(([id]) => id === category)?.[1]}
                       </p>
