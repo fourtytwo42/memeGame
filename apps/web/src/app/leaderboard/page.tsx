@@ -1,4 +1,5 @@
 import type { Route } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Badge, Panel } from "@meme-foundry/ui";
 import { AppShell } from "@/components/shell/app-shell";
@@ -118,24 +119,37 @@ export default async function LeaderboardPage({
                         <Medal className="text-amber-300 sm:mt-2" size={20} />
                       ) : null}
                     </div>
-                    <div className="min-w-0">
-                      <div className="flex min-w-0 flex-wrap items-center gap-2">
-                        <h2 className="min-w-0 break-words text-lg font-black text-white sm:text-xl">
-                          {token.name}
-                        </h2>
-                        <Badge>${token.ticker}</Badge>
-                        <Badge
-                          tone={
-                            token.status === "graduated" ? "good" : "neutral"
-                          }
-                        >
-                          {token.status}
-                        </Badge>
+                    <div className="grid min-w-0 grid-cols-[4rem_minmax(0,1fr)] items-center gap-3">
+                      <Image
+                        alt={`${token.name} token art`}
+                        className="size-16 rounded-lg border border-white/10 bg-slate-950/80 object-cover p-1"
+                        height={64}
+                        src={
+                          token.cardImageUrl ??
+                          token.placeholderImageUrl ??
+                          "/assets/game/tokens/default-token-mascot.png"
+                        }
+                        width={64}
+                      />
+                      <div className="min-w-0">
+                        <div className="flex min-w-0 flex-wrap items-center gap-2">
+                          <h2 className="min-w-0 break-words text-lg font-black text-white sm:text-xl">
+                            {token.name}
+                          </h2>
+                          <Badge>${token.ticker}</Badge>
+                          <Badge
+                            tone={
+                              token.status === "graduated" ? "good" : "neutral"
+                            }
+                          >
+                            {token.status}
+                          </Badge>
+                        </div>
+                        <p className="mt-1 break-words text-sm text-slate-400">
+                          Founder {token.user.username}
+                          {token.crew ? ` · Crew ${token.crew.name}` : ""}
+                        </p>
                       </div>
-                      <p className="mt-1 break-words text-sm text-slate-400">
-                        Founder {token.user.username}
-                        {token.crew ? ` · Crew ${token.crew.name}` : ""}
-                      </p>
                     </div>
                     <div className="min-w-0 rounded-md bg-slate-900/80 p-3 text-left sm:text-right">
                       <p className="text-xs font-bold uppercase text-slate-400">

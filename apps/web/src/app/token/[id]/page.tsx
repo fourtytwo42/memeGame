@@ -155,7 +155,7 @@ export default async function PublicTokenPage({
               src={
                 token.cardImageUrl ??
                 token.placeholderImageUrl ??
-                "/assets/game/tokens/default-token-placeholder.svg"
+                "/assets/game/tokens/default-token-mascot.png"
               }
               width={144}
             />

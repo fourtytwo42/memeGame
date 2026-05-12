@@ -1,4 +1,5 @@
 import type { Route } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge, Panel } from "@meme-foundry/ui";
@@ -21,6 +22,24 @@ function firstParam(
 ) {
   const value = params[key];
   return Array.isArray(value) ? value[0] : value;
+}
+
+function narrativeImage(slug: string) {
+  const key = slug.toLowerCase();
+  if (key.includes("ai")) return "/assets/game/narratives/ai-agents.png";
+  if (key.includes("frog")) return "/assets/game/narratives/frogs.png";
+  if (key.includes("dog")) return "/assets/game/narratives/dogs.png";
+  if (key.includes("cat")) return "/assets/game/narratives/cats.png";
+  if (key.includes("food") || key.includes("snack"))
+    return "/assets/game/narratives/food.png";
+  if (key.includes("space") || key.includes("robot"))
+    return "/assets/game/narratives/robots.png";
+  if (key.includes("wizard")) return "/assets/game/narratives/wizard.png";
+  if (key.includes("retro"))
+    return "/assets/game/narratives/retro-internet.png";
+  if (key.includes("community") || key.includes("crew"))
+    return "/assets/game/narratives/community.png";
+  return "/assets/game/narratives/absurdist.png";
 }
 
 export default async function PlayPage({ searchParams }: PlayProps) {
@@ -86,8 +105,23 @@ export default async function PlayPage({ searchParams }: PlayProps) {
               </span>
             </div>
             <div className="mt-5 grid gap-4 sm:grid-cols-[9rem_1fr] sm:items-center">
-              <div className="grid size-32 place-items-center rounded-lg border border-lime-300/30 bg-slate-950/65 text-5xl font-black text-lime-300 shadow-[0_0_24px_rgba(132,204,22,0.16)]">
-                {token?.ticker.slice(0, 2) ?? "MF"}
+              <div className="relative grid size-32 place-items-center overflow-hidden rounded-lg border border-lime-300/30 bg-slate-950/65 shadow-[0_0_24px_rgba(132,204,22,0.16)]">
+                <Image
+                  alt={
+                    token
+                      ? `${token.name} token art`
+                      : "Meme Foundry token mascot"
+                  }
+                  className="size-full object-contain p-2"
+                  height={128}
+                  priority
+                  src={
+                    token?.cardImageUrl ??
+                    token?.placeholderImageUrl ??
+                    "/assets/game/tokens/default-token-mascot.png"
+                  }
+                  width={128}
+                />
               </div>
               <div>
                 <h1 className="text-3xl font-black text-white sm:text-4xl">
@@ -221,19 +255,30 @@ export default async function PlayPage({ searchParams }: PlayProps) {
               {narratives.map((item) => (
                 <div
                   key={item.id}
-                  className="grid gap-2 rounded-md border border-white/10 bg-slate-950/55 p-3"
+                  className="grid grid-cols-[3.25rem_minmax(0,1fr)] gap-3 rounded-md border border-white/10 bg-slate-950/55 p-3"
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="font-black text-white">{item.name}</span>
-                    <Badge tone={item.heat > 70 ? "good" : "neutral"}>
-                      {item.heat}
-                    </Badge>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-slate-800">
-                    <div
-                      className="h-full rounded-full bg-pink-400"
-                      style={{ width: `${item.heat}%` }}
-                    />
+                  <Image
+                    alt={`${item.name} narrative art`}
+                    className="size-12 rounded-md bg-slate-950/80 object-contain p-1"
+                    height={48}
+                    src={narrativeImage(item.slug)}
+                    width={48}
+                  />
+                  <div className="min-w-0">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="break-words font-black text-white">
+                        {item.name}
+                      </span>
+                      <Badge tone={item.heat > 70 ? "good" : "neutral"}>
+                        {item.heat}
+                      </Badge>
+                    </div>
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-800">
+                      <div
+                        className="h-full rounded-full bg-pink-400"
+                        style={{ width: `${item.heat}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -282,6 +327,17 @@ export default async function PlayPage({ searchParams }: PlayProps) {
                     <span className="grid size-7 place-items-center rounded-full bg-amber-300 text-sm font-black text-slate-950">
                       {index + 1}
                     </span>
+                    <Image
+                      alt={`${leader.name} token art`}
+                      className="size-11 shrink-0 rounded-md bg-slate-900 object-cover"
+                      height={44}
+                      src={
+                        leader.cardImageUrl ??
+                        leader.placeholderImageUrl ??
+                        "/assets/game/tokens/default-token-mascot.png"
+                      }
+                      width={44}
+                    />
                     <div className="min-w-0">
                       <p className="break-words font-black text-white">
                         {leader.name}

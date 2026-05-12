@@ -206,7 +206,7 @@ export default async function ManageTokenPage({
           imageUrl:
             token.cardImageUrl ??
             token.placeholderImageUrl ??
-            "/assets/game/tokens/default-token-placeholder.svg",
+            "/assets/game/tokens/default-token-mascot.png",
           marketCap: token.simulatedMarketCap,
           price: formatPrice(token.simulatedPrice),
           holders: token.simulatedHolders,

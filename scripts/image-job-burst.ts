@@ -41,9 +41,8 @@ async function main() {
         narrative: "AI Mascots",
         narrativeSlug: "ai-mascots",
         status: "draft",
-        placeholderImageUrl:
-          "/assets/game/tokens/default-token-placeholder.svg",
-        cardImageUrl: "/assets/game/tokens/default-token-placeholder.svg"
+        placeholderImageUrl: "/assets/game/tokens/default-token-mascot.png",
+        cardImageUrl: "/assets/game/tokens/default-token-mascot.png"
       }
     });
     const imageJob = await prisma.imageJob.create({

@@ -98,9 +98,8 @@ export async function createLaunch(
         narrative: narrative.name,
         narrativeSlug: narrative.slug,
         mascotPrompt: parsed.data.mascotPrompt,
-        placeholderImageUrl:
-          "/assets/game/tokens/default-token-placeholder.svg",
-        cardImageUrl: "/assets/game/tokens/default-token-placeholder.svg",
+        placeholderImageUrl: "/assets/game/tokens/default-token-mascot.png",
+        cardImageUrl: "/assets/game/tokens/default-token-mascot.png",
         status: "live",
         launchedAt: new Date(),
         simulatedPrice: defaults.simulatedPrice,

@@ -189,8 +189,7 @@ async function main() {
         narrativeSlug: "ai-mascots",
         description: "Seed token for Stage 3 verification.",
         mascotPrompt: "A fictional game mascot for a simulated token.",
-        placeholderImageUrl:
-          "/assets/game/tokens/default-token-placeholder.svg",
+        placeholderImageUrl: "/assets/game/tokens/default-token-mascot.png",
         hype,
         trust,
         memeQuality,

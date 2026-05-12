@@ -196,7 +196,7 @@ export function LaunchWizardForm({
               className="mx-auto size-40"
               height={160}
               priority
-              src="/assets/game/tokens/default-token-placeholder.svg"
+              src="/assets/game/tokens/default-token-mascot.png"
               width={160}
             />
             <h2 className="mt-4 text-2xl font-black text-white">
