@@ -20,7 +20,7 @@
     "test:browser-audit": "node scripts/browser-audit-placeholder.mjs",
     "test:a11y": "node scripts/stage2-placeholder.mjs a11y",
     "test:stress": "node scripts/stage2-placeholder.mjs stress",
-    "test:scale": "node scripts/stage2-placeholder.mjs scale",
+    "test:scale": "tsx scripts/stage8-scale-check.ts",
     "test:release": "pnpm verify && pnpm test:browser-audit && pnpm test:stress && pnpm test:scale",
     "prisma:validate": "node scripts/prisma-validate.mjs",
     "audit": "pnpm audit --audit-level high",
@@ -33,7 +33,8 @@
     "db:reset": "prisma migrate reset --force",
     "db:test:reset": "node scripts/reset-test-db.mjs",
     "db:seed:scale": "tsx scripts/seed-scale.ts",
-    "simulate:tick": "tsx scripts/simulate-token-tick.ts"
+    "simulate:tick": "tsx scripts/simulate-token-tick.ts",
+    "world:refresh": "tsx scripts/refresh-world-state.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
