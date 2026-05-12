@@ -56,11 +56,11 @@ checks that fail on real release blockers.
 Last verified in this chunk:
 
 ```bash
-pnpm verify
 pnpm test:e2e
 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000 pnpm test:browser-audit
 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000 pnpm test:a11y
 pnpm test:stress
+REALTIME_LOAD_TIMEOUT_MS=45000 SUPPORT_BURST_CLIENTS=20 AI_TEXT_BURST_JOBS=100 IMAGE_BURST_JOBS=25 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000 pnpm test:release
 ```
 
 Observed results:
@@ -72,10 +72,15 @@ Observed results:
 - Accessibility scan: 10 routes, 0 issues.
 - Stress: 12 launch clients, 24 support clients, 36 launch actions, 24 support
   actions, leaderboard snapshots refreshed.
+- Full `pnpm test:release` with browser audit, accessibility, stress, scale,
+  realtime load, support burst, crew scale, AI smoke/text burst, image burst,
+  and backup/restore passed.
+- `test:release` now includes `pnpm test:a11y`.
+- Fallback season commentary clamps generated titles to the schema limit after
+  a long synthetic season name exposed the issue during release verification.
 
 ## Remaining Stage 15 Work
 
-- Run the full `pnpm test:release` with the new gates.
 - Complete browser-use visual audits/playtests for all major flows.
 - Complete soak, security, dependency, backup/restore, scale, degraded-mode,
   and release runbook evidence.

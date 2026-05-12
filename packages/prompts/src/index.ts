@@ -311,8 +311,9 @@ export function fallbackFounderCoach(context: AiContext = {}) {
 }
 
 export function fallbackSeasonCommentary(context: AiContext = {}) {
+  const title = `${context.seasonName ?? "Season"} pulse check`;
   return seasonCommentarySchema.parse({
-    title: `${context.seasonName ?? "Season"} pulse check`,
+    title: title.length > 120 ? `${title.slice(0, 117)}...` : title,
     summary:
       "The season is still readable: hot narratives reward clear identity, crowded narratives punish copycat launches, and steady community action remains the safest path.",
     mood: "steady"
