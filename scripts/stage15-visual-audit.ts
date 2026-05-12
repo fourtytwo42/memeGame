@@ -59,6 +59,10 @@ async function main() {
         const metrics = await page.evaluate(() => {
           const body = document.body;
           const html = document.documentElement;
+          const shellNav = document.querySelector(
+            '[data-testid="desktop-left-nav"]'
+          );
+          const navRect = shellNav?.getBoundingClientRect();
           const visibleText = body.innerText.trim();
           return {
             textLength: visibleText.length,
@@ -66,7 +70,16 @@ async function main() {
               Math.max(body.scrollWidth, html.scrollWidth) -
               Math.max(body.clientWidth, html.clientWidth),
             mainCount: document.querySelectorAll("main").length,
-            imageCount: document.querySelectorAll("img").length
+            imageCount: document.querySelectorAll("img").length,
+            leftNavPresent: Boolean(shellNav),
+            leftNavPinned:
+              Boolean(navRect) &&
+              Math.abs((navRect?.left ?? 999) - 0) <= 2 &&
+              Math.abs((navRect?.top ?? 999) - 0) <= 2,
+            leftNavTall:
+              Boolean(navRect) && (navRect?.height ?? 0) >= window.innerHeight - 4,
+            leftNavNarrow:
+              Boolean(navRect) && (navRect?.width ?? 9999) <= window.innerWidth * 0.38
           };
         });
 
@@ -83,6 +96,21 @@ async function main() {
         if (metrics.mainCount !== 1) {
           throw new Error(
             `${viewport.name} ${route.path} has ${metrics.mainCount} main landmarks.`
+          );
+        }
+        if (!metrics.leftNavPresent) {
+          throw new Error(
+            `${viewport.name} ${route.path} is missing the primary left navigation.`
+          );
+        }
+        if (!metrics.leftNavPinned || !metrics.leftNavTall) {
+          throw new Error(
+            `${viewport.name} ${route.path} primary navigation is not pinned to the left edge.`
+          );
+        }
+        if (!metrics.leftNavNarrow) {
+          throw new Error(
+            `${viewport.name} ${route.path} primary navigation is too wide and reads like a top/content menu.`
           );
         }
 
