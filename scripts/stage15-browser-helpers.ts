@@ -160,7 +160,13 @@ export async function resolveAuditRoutes(): Promise<AuditRoute[]> {
       label: "leaderboard",
       expected: "Leaderboard"
     },
-    { path: "/admin", label: "admin", expected: "Admin", protected: true }
+    { path: "/admin", label: "admin", expected: "Admin", protected: true },
+    {
+      path: "/admin/assets",
+      label: "admin asset gallery",
+      expected: "Asset Gallery",
+      protected: true
+    }
   ];
 }
 

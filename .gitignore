@@ -67,7 +67,6 @@ playwright-report/
 test-results/
 
 # Runtime generated assets/data
-assets/source/imagegen/*
-!assets/source/imagegen/.gitkeep
+assets/source/imagegen/tmp/
 data/images/
 apps/web/public/generated/

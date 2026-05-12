@@ -41,6 +41,13 @@ checks that fail on real release blockers.
   - Fails if action writes, support writes, snapshots, or duration evidence are
     missing.
 
+- `pnpm assets:verify`
+  - Runs `scripts/verify-production-assets.ts`.
+  - Verifies the imagegen production asset manifest and final PNG alpha assets.
+  - Checks required category coverage, dimensions, transparent corners, subject
+    coverage, and manifest fields.
+  - Is included in `pnpm test:release`.
+
 ## UI Alignment
 
 - The app shell now keeps primary navigation in a left-side rail for every
@@ -87,6 +94,9 @@ Observed results:
 - `test:release` now includes `pnpm test:a11y`.
 - Fallback season commentary clamps generated titles to the schema limit after
   a long synthetic season name exposed the issue during release verification.
+- Production asset pass now has 32 manifest entries across brand, narratives,
+  tokens, statuses, NPCs, crews, share art, and empty/degraded states. Evidence
+  is recorded in `docs/STAGE15_PRODUCTION_ASSETS.md`.
 
 ## Browser-Use Visual Audit
 
@@ -103,6 +113,7 @@ Browser-use drove the Codex in-app browser against the live VM app at
 - `/seasons/scale-season`
 - `/leaderboard?tab=holders`
 - `/admin`
+- `/admin/assets`
 
 Screenshots are stored under `docs/evidence/stage15-browser-use/`.
 
@@ -111,6 +122,10 @@ For every captured route, the browser-use DOM snapshot confirmed:
 - primary navigation is present in the left rail;
 - top/bottom primary navigation is absent;
 - the page loads nonblank content.
+
+Browser-use also opened `/admin/assets` on the live VM and confirmed the
+imagegen production assets render on checkerboard backgrounds for visual alpha
+inspection.
 
 ## Browser-Use Playtesting During Soak
 
@@ -132,6 +147,5 @@ approachability pass showed that safety cue was missing from the play hub.
 - `docs/RELEASE_RUNBOOK.md` now covers host-native preflight,
   verification, service install/restart, health checks, backup/restore,
   rollback, soak/scale evidence, and final release checklist.
-- Complete browser-use visual audits/playtests for all major flows.
-- Complete soak, security, dependency, backup/restore, scale, degraded-mode,
-  and release evidence.
+- Complete any final completion-audit gaps found before moving to Docker
+  packaging.
