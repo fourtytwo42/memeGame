@@ -45,6 +45,7 @@ async function main() {
 
       for (const route of routes) {
         await page.goto(`${baseUrl}${route.path}`, {
+          timeout: 60_000,
           waitUntil: "domcontentloaded"
         });
         await page.waitForTimeout(150);
@@ -77,9 +78,11 @@ async function main() {
               Math.abs((navRect?.left ?? 999) - 0) <= 2 &&
               Math.abs((navRect?.top ?? 999) - 0) <= 2,
             leftNavTall:
-              Boolean(navRect) && (navRect?.height ?? 0) >= window.innerHeight - 4,
+              Boolean(navRect) &&
+              (navRect?.height ?? 0) >= window.innerHeight - 4,
             leftNavNarrow:
-              Boolean(navRect) && (navRect?.width ?? 9999) <= window.innerWidth * 0.38
+              Boolean(navRect) &&
+              (navRect?.width ?? 9999) <= window.innerWidth * 0.38
           };
         });
 
