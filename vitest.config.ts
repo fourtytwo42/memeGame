@@ -11,6 +11,7 @@ export default defineConfig({
       "@/": `${root}apps/web/src/`,
       "@meme-foundry/db": `${root}packages/db/src/index.ts`,
       "@meme-foundry/game-engine": `${root}packages/game-engine/src/index.ts`,
+      "@meme-foundry/image-pipeline": `${root}packages/image-pipeline/src/index.ts`,
       "@meme-foundry/prompts": `${root}packages/prompts/src/index.ts`,
       "@meme-foundry/realtime": `${root}packages/realtime/src/index.ts`
     }

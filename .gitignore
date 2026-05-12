@@ -69,3 +69,5 @@ test-results/
 # Runtime generated assets/data
 assets/source/imagegen/*
 !assets/source/imagegen/.gitkeep
+data/images/
+apps/web/public/generated/

@@ -61,6 +61,13 @@ export const realtimeEventSchema = z.discriminatedUnion("type", [
     seasonId: z.string().nullable().optional(),
     graduationType: z.string(),
     marketCap: z.number()
+  }),
+  z.object({
+    type: z.literal("TOKEN_IMAGE_READY"),
+    tokenId: z.string(),
+    seasonId: z.string().nullable().optional(),
+    imageUrl: z.string(),
+    imageJobId: z.string()
   })
 ]);
 

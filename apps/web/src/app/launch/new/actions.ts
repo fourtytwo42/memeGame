@@ -3,6 +3,10 @@
 import { auth } from "@/auth";
 import { prisma } from "@meme-foundry/db";
 import { createDefaultTokenState } from "@meme-foundry/game-engine";
+import {
+  buildMascotPrompt,
+  buildNegativePrompt
+} from "@meme-foundry/image-pipeline";
 import { launchTokenSchema } from "@meme-foundry/validation";
 import type { Route } from "next";
 import { redirect } from "next/navigation";
@@ -151,6 +155,20 @@ export async function createLaunch(
       prisma.narrativeMeta.update({
         where: { id: narrative.id },
         data: { activeLaunches: { increment: 1 } }
+      }),
+      prisma.imageJob.create({
+        data: {
+          tokenId: token.id,
+          status: "queued",
+          prompt: buildMascotPrompt({
+            tokenName: token.name,
+            ticker: token.ticker,
+            concept: token.mascotPrompt,
+            narrative: token.narrative
+          }),
+          negativePrompt: buildNegativePrompt(),
+          model: "local-procedural-sharp-v1"
+        }
       })
     ]);
 

@@ -11,13 +11,18 @@ export default async function AdminPage() {
   if (!session?.user) redirect("/signin");
   if (session.user.role !== "admin") redirect("/play");
 
-  const [users, tokens, seasons, aiLogs] = await Promise.all([
+  const [users, tokens, seasons, aiLogs, imageJobs] = await Promise.all([
     prisma.user.count(),
     prisma.launchToken.count(),
     prisma.season.count(),
     prisma.aiGeneratedContent.findMany({
       orderBy: { createdAt: "desc" },
       take: 12
+    }),
+    prisma.imageJob.findMany({
+      orderBy: { updatedAt: "desc" },
+      take: 12,
+      include: { token: true }
     })
   ]);
 
@@ -87,6 +92,53 @@ export default async function AdminPage() {
             {aiLogs.length === 0 ? (
               <p className="rounded-md border border-dashed border-white/15 bg-slate-950/45 p-4 text-sm text-slate-400">
                 No AI generations have been recorded yet.
+              </p>
+            ) : null}
+          </div>
+        </Panel>
+
+        <Panel data-testid="admin-image-jobs">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                Image pipeline
+              </p>
+              <h2 className="text-xl font-black text-white">Image job queue</h2>
+            </div>
+            <Badge tone="neutral">CPU local</Badge>
+          </div>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[48rem] border-separate border-spacing-y-2 text-left text-sm">
+              <thead className="text-xs uppercase tracking-[0.12em] text-slate-400">
+                <tr>
+                  <th className="px-3 py-2">Token</th>
+                  <th className="px-3 py-2">Status</th>
+                  <th className="px-3 py-2">Model</th>
+                  <th className="px-3 py-2">Attempts</th>
+                  <th className="px-3 py-2">Error</th>
+                </tr>
+              </thead>
+              <tbody>
+                {imageJobs.map((job) => (
+                  <tr className="bg-slate-950/55" key={job.id}>
+                    <td className="rounded-l-md px-3 py-3 font-bold text-white">
+                      {job.token.name}
+                    </td>
+                    <td className="px-3 py-3 text-slate-200">{job.status}</td>
+                    <td className="px-3 py-3 text-slate-300">
+                      {job.model ?? "local"}
+                    </td>
+                    <td className="px-3 py-3 text-slate-300">{job.attempts}</td>
+                    <td className="rounded-r-md px-3 py-3 text-amber-200">
+                      {job.error ?? "none"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {imageJobs.length === 0 ? (
+              <p className="rounded-md border border-dashed border-white/15 bg-slate-950/45 p-4 text-sm text-slate-400">
+                No image jobs have been queued yet.
               </p>
             ) : null}
           </div>
