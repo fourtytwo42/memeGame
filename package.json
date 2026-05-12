@@ -14,7 +14,7 @@
     "lint": "pnpm -r --if-present lint",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "test:integration": "node scripts/stage2-placeholder.mjs integration",
+    "test:integration": "vitest run tests/integration",
     "test:e2e": "playwright test",
     "test:workers": "node scripts/stage2-placeholder.mjs workers",
     "test:browser-audit": "node scripts/browser-audit-placeholder.mjs",
@@ -22,10 +22,17 @@
     "test:stress": "node scripts/stage2-placeholder.mjs stress",
     "test:scale": "node scripts/stage2-placeholder.mjs scale",
     "test:release": "pnpm verify && pnpm test:browser-audit && pnpm test:stress && pnpm test:scale",
-    "prisma:validate": "node scripts/prisma-validate-placeholder.mjs",
+    "prisma:validate": "node scripts/prisma-validate.mjs",
     "audit": "pnpm audit --audit-level high",
     "build": "pnpm -r --if-present build",
-    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm prisma:validate && pnpm build"
+    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm prisma:validate && pnpm build",
+    "prisma:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset --force",
+    "db:test:reset": "node scripts/reset-test-db.mjs",
+    "db:seed:scale": "tsx scripts/seed-scale.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
@@ -35,13 +42,19 @@
     "@types/node": "^24.10.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "dotenv": "^17.4.2",
     "eslint": "^10.0.0",
     "eslint-config-next": "^16.2.6",
     "eslint-config-prettier": "^10.1.0",
     "jsdom": "^28.0.0",
     "prettier": "^3.7.0",
+    "prisma": "^7.8.0",
+    "tsx": "^4.21.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.59.3",
     "vitest": "^4.1.6"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.8.0"
   }
 }

@@ -1,4 +1,17 @@
-import { Flame, Info, Rocket, ShieldAlert, Trophy, Users } from "lucide-react";
+import {
+  Flame,
+  Info,
+  LogOut,
+  Rocket,
+  ShieldAlert,
+  Trophy,
+  Users
+} from "lucide-react";
+import { auth } from "@/auth";
+import { signOutAction } from "@/app/signin/actions";
+import { prisma } from "@meme-foundry/db";
+
+export const dynamic = "force-dynamic";
 
 const statGroups = [
   {
@@ -25,7 +38,17 @@ const statGroups = [
 
 const navItems = ["Play", "Launch", "Board", "Seasons", "Crews", "Profile"];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await auth();
+  const [activeSeason, tokenCount, narrativeCount] = await Promise.all([
+    prisma.season.findFirst({
+      where: { status: "active" },
+      orderBy: { startsAt: "desc" }
+    }),
+    prisma.launchToken.count(),
+    prisma.narrativeMeta.count()
+  ]);
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,#1f2937,transparent_32rem),#0b0d12] px-4 py-4 text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-7xl flex-col gap-4">
@@ -33,6 +56,10 @@ export default function HomePage() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">
               Active season
+            </p>
+            <p className="text-xs font-semibold text-slate-400">
+              {activeSeason?.name ?? "Not seeded yet"} · {tokenCount} tokens ·{" "}
+              {narrativeCount} narratives
             </p>
             <h1 className="text-xl font-black tracking-normal text-white sm:text-2xl">
               Meme Foundry
@@ -52,13 +79,25 @@ export default function HomePage() {
               </a>
             ))}
           </nav>
-          <button
-            className="inline-flex min-h-11 items-center gap-2 rounded-md bg-emerald-400 px-4 py-2 text-sm font-black text-slate-950 hover:bg-emerald-300"
-            type="button"
-          >
-            <Rocket aria-hidden="true" size={18} />
-            Launch
-          </button>
+          {session?.user ? (
+            <form action={signOutAction}>
+              <button
+                className="inline-flex min-h-11 items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-black text-slate-950 hover:bg-slate-200"
+                type="submit"
+              >
+                <LogOut aria-hidden="true" size={18} />
+                Sign out
+              </button>
+            </form>
+          ) : (
+            <a
+              className="inline-flex min-h-11 items-center gap-2 rounded-md bg-emerald-400 px-4 py-2 text-sm font-black text-slate-950 hover:bg-emerald-300"
+              href="/signin"
+            >
+              <Rocket aria-hidden="true" size={18} />
+              Sign in
+            </a>
+          )}
         </header>
 
         <section
@@ -102,7 +141,10 @@ export default function HomePage() {
           </div>
 
           <aside className="grid gap-4">
-            <section className="rounded-lg border border-white/10 bg-white/[0.05] p-5">
+            <section
+              className="rounded-lg border border-white/10 bg-white/[0.05] p-5"
+              data-testid="recommended-action-card"
+            >
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
@@ -121,12 +163,12 @@ export default function HomePage() {
                 Your launch needs attention. This helps Growth, adds a little
                 Risk, and teaches the core tradeoff.
               </p>
-              <button
-                className="w-full rounded-md bg-white px-4 py-3 text-sm font-black text-slate-950 hover:bg-slate-200"
-                type="button"
+              <a
+                className="block w-full rounded-md bg-white px-4 py-3 text-center text-sm font-black text-slate-950 hover:bg-slate-200"
+                href={session?.user ? "/play" : "/signin"}
               >
                 Take recommended action
-              </button>
+              </a>
             </section>
 
             <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">

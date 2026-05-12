@@ -11,6 +11,6 @@ test("home command hub renders", async ({ page }) => {
     page.getByRole("heading", { name: "Meme Foundry" })
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Take recommended action" })
+    page.getByRole("link", { name: "Take recommended action" })
   ).toBeVisible();
 });

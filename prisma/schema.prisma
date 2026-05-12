@@ -1,0 +1,380 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String?   @unique
+  emailVerified   DateTime?
+  username        String    @unique
+  name            String?
+  avatarUrl       String?
+  image           String?
+  passwordHash    String?
+  role            String    @default("user")
+  status          String    @default("active")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  accounts        Account[]
+  sessions        Session[]
+  founderProfile  FounderProfile?
+  tokens          LaunchToken[]
+  actions         PlayerAction[]
+  supportActions  SupportAction[]
+  crewMemberships CrewMember[]
+  adminActions    AdminAction[] @relation("AdminActionActor")
+  crewActions     CrewAction[] @relation("CrewActionCreator")
+  startedRivalries Rivalry[] @relation("RivalryStarter")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model FounderProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  displayName       String
+  bio               String?
+  reputation        Int      @default(50)
+  clout             Int      @default(0)
+  totalGameProfit   Float    @default(0)
+  marketingSkill    Int      @default(10)
+  memeSkill         Int      @default(10)
+  communitySkill    Int      @default(10)
+  narrativeSkill    Int      @default(10)
+  riskTolerance     Int      @default(10)
+  launchesCreated   Int      @default(0)
+  graduatedLaunches Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Season {
+  id         String          @id @default(cuid())
+  name       String
+  slug       String          @unique
+  status     String          @default("upcoming")
+  startsAt   DateTime
+  endsAt     DateTime
+  rulesJson  Json?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  tokens     LaunchToken[]
+  narratives NarrativeMeta[]
+  events     GameEvent[]
+  crews      Crew[]
+  snapshots  ScoreSnapshot[]
+}
+
+model NarrativeMeta {
+  id                    String   @id @default(cuid())
+  seasonId              String
+  name                  String
+  slug                  String
+  heat                  Int      @default(50)
+  saturation            Int      @default(0)
+  fatigue               Int      @default(0)
+  whaleInterestModifier Int      @default(0)
+  trustModifier         Int      @default(0)
+  memePotential         Int      @default(50)
+  activeLaunches        Int      @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  season Season @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  @@unique([seasonId, slug])
+}
+
+model LaunchToken {
+  id                  String    @id @default(cuid())
+  userId              String
+  seasonId            String?
+  crewId              String?
+  name                String
+  ticker              String
+  description         String?
+  narrative           String
+  narrativeSlug       String?
+  mascotPrompt        String?
+  mascotUrl           String?
+  cardImageUrl        String?
+  placeholderImageUrl String?
+  status              String    @default("draft")
+  simulatedPrice      Float     @default(0.000001)
+  simulatedMarketCap  Float     @default(1000)
+  simulatedLiquidity  Float     @default(500)
+  simulatedHolders    Int       @default(0)
+  simulatedVolume     Float     @default(0)
+  hype                Int       @default(10)
+  trust               Int       @default(50)
+  memeQuality         Int       @default(25)
+  narrativeStrength   Int       @default(25)
+  communityStrength   Int       @default(10)
+  whaleInterest       Int       @default(5)
+  botRisk             Int       @default(0)
+  fudPressure         Int       @default(5)
+  fatigue             Int       @default(0)
+  treasury            Float     @default(1000)
+  gameProfit          Float     @default(0)
+  score               Int       @default(0)
+  launchedAt          DateTime?
+  graduatedAt         DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  season       Season?         @relation(fields: [seasonId], references: [id])
+  crew         Crew?           @relation(fields: [crewId], references: [id])
+  ticks        TokenTick[]
+  actions      PlayerAction[]
+  events       GameEvent[]
+  crewActions  CrewAction[]
+  supportActions SupportAction[]
+  imageJobs    ImageJob[]
+  rivalriesA   Rivalry[]       @relation("RivalryTokenA")
+  rivalriesB   Rivalry[]       @relation("RivalryTokenB")
+
+  @@index([seasonId, status, score])
+  @@unique([userId, ticker])
+}
+
+model TokenTick {
+  id        String   @id @default(cuid())
+  tokenId   String
+  price     Float
+  marketCap Float
+  volume    Float
+  holders   Int
+  hype      Int
+  trust     Int
+  score     Int?
+  createdAt DateTime @default(now())
+
+  token LaunchToken @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+
+  @@index([tokenId, createdAt])
+}
+
+model PlayerAction {
+  id         String   @id @default(cuid())
+  userId     String
+  tokenId    String
+  actionType String
+  cost       Float
+  energyCost Int
+  resultJson Json?
+  createdAt  DateTime @default(now())
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token LaunchToken @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+
+  @@index([tokenId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model GameEvent {
+  id          String   @id @default(cuid())
+  tokenId     String?
+  seasonId    String?
+  crewId      String?
+  type        String
+  title       String
+  description String
+  source      String   @default("system")
+  impactJson  Json?
+  choicesJson Json?
+  severity    String
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  token  LaunchToken? @relation(fields: [tokenId], references: [id])
+  season Season?      @relation(fields: [seasonId], references: [id])
+  crew   Crew?        @relation(fields: [crewId], references: [id])
+
+  @@index([tokenId, createdAt])
+  @@index([seasonId, createdAt])
+}
+
+model Crew {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  avatarUrl   String?
+  seasonId    String?
+  reputation  Int      @default(50)
+  score       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  season         Season?         @relation(fields: [seasonId], references: [id])
+  members        CrewMember[]
+  actions        CrewAction[]
+  tokens         LaunchToken[]
+  events         GameEvent[]
+  supportActions SupportAction[]
+}
+
+model CrewMember {
+  id       String   @id @default(cuid())
+  crewId   String
+  userId   String
+  role     String   @default("member")
+  joinedAt DateTime @default(now())
+
+  crew Crew @relation(fields: [crewId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([crewId, userId])
+}
+
+model CrewAction {
+  id          String   @id @default(cuid())
+  crewId      String
+  tokenId     String?
+  actionType  String
+  energyCost  Int
+  impactJson  Json?
+  createdById String
+  createdAt   DateTime @default(now())
+
+  crew    Crew         @relation(fields: [crewId], references: [id], onDelete: Cascade)
+  token   LaunchToken? @relation(fields: [tokenId], references: [id])
+  creator User         @relation("CrewActionCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([crewId, createdAt])
+}
+
+model SupportAction {
+  id         String   @id @default(cuid())
+  userId     String
+  tokenId    String
+  crewId     String?
+  actionType String
+  energyCost Int
+  impactJson Json?
+  createdAt  DateTime @default(now())
+
+  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token LaunchToken  @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+  crew  Crew?        @relation(fields: [crewId], references: [id])
+
+  @@index([tokenId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model Rivalry {
+  id              String   @id @default(cuid())
+  tokenAId        String
+  tokenBId        String
+  status          String   @default("active")
+  intensity       Int      @default(10)
+  startedByUserId String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tokenA  LaunchToken @relation("RivalryTokenA", fields: [tokenAId], references: [id], onDelete: Cascade)
+  tokenB  LaunchToken @relation("RivalryTokenB", fields: [tokenBId], references: [id], onDelete: Cascade)
+  startedBy User      @relation("RivalryStarter", fields: [startedByUserId], references: [id], onDelete: Cascade)
+}
+
+model AiGeneratedContent {
+  id         String   @id @default(cuid())
+  purpose    String
+  model      String?
+  promptHash String?
+  inputJson  Json?
+  outputJson Json?
+  rawOutput  String?
+  status     String   @default("created")
+  error      String?
+  createdAt  DateTime @default(now())
+}
+
+model ImageJob {
+  id             String   @id @default(cuid())
+  tokenId        String
+  status         String   @default("queued")
+  prompt         String
+  negativePrompt String?
+  model          String?
+  seed           Int?
+  outputUrl      String?
+  error          String?
+  attempts       Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  token LaunchToken @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+}
+
+model ScoreSnapshot {
+  id         String   @id @default(cuid())
+  seasonId   String
+  entityType String
+  entityId   String
+  category   String
+  score      Float
+  rank       Int?
+  createdAt  DateTime @default(now())
+
+  season Season @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  @@index([seasonId, category, rank])
+}
+
+model AdminAction {
+  id          String   @id @default(cuid())
+  actorId     String
+  actionType  String
+  targetType  String
+  targetId    String?
+  detailJson  Json?
+  createdAt   DateTime @default(now())
+
+  actor User @relation("AdminActionActor", fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([actorId, createdAt])
+}
