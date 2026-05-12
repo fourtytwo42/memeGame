@@ -75,6 +75,9 @@ Observed results:
 - Full `pnpm test:release` with browser audit, accessibility, stress, scale,
   realtime load, support burst, crew scale, AI smoke/text burst, image burst,
   and backup/restore passed.
+- `pnpm audit --audit-level moderate` passes with no known vulnerabilities
+  after pnpm workspace overrides for patched `@hono/node-server` and `postcss`
+  transitive versions.
 - `test:release` now includes `pnpm test:a11y`.
 - Fallback season commentary clamps generated titles to the schema limit after
   a long synthetic season name exposed the issue during release verification.
