@@ -21,7 +21,7 @@
     "test:a11y": "node scripts/stage2-placeholder.mjs a11y",
     "test:stress": "node scripts/stage2-placeholder.mjs stress",
     "test:scale": "tsx scripts/stage8-scale-check.ts",
-    "test:release": "pnpm verify && pnpm test:browser-audit && pnpm test:stress && pnpm test:scale && pnpm test:realtime-load",
+    "test:release": "pnpm verify && pnpm test:browser-audit && pnpm test:stress && pnpm test:scale && pnpm test:realtime-load && pnpm test:support-burst",
     "prisma:validate": "node scripts/prisma-validate.mjs",
     "audit": "pnpm audit --audit-level high",
     "build": "pnpm -r --if-present build",
@@ -36,7 +36,8 @@
     "simulate:tick": "tsx scripts/simulate-token-tick.ts",
     "world:refresh": "tsx scripts/refresh-world-state.ts",
     "realtime:dev": "pnpm --filter @meme-foundry/realtime-app dev",
-    "test:realtime-load": "tsx scripts/realtime-load.ts"
+    "test:realtime-load": "tsx scripts/realtime-load.ts",
+    "test:support-burst": "tsx scripts/support-burst.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",

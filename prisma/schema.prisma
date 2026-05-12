@@ -7,29 +7,30 @@ datasource db {
 }
 
 model User {
-  id              String    @id @default(cuid())
-  email           String?   @unique
-  emailVerified   DateTime?
-  username        String    @unique
-  name            String?
-  avatarUrl       String?
-  image           String?
-  passwordHash    String?
-  role            String    @default("user")
-  status          String    @default("active")
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  emailVerified DateTime?
+  username      String    @unique
+  name          String?
+  avatarUrl     String?
+  image         String?
+  passwordHash  String?
+  role          String    @default("user")
+  status        String    @default("active")
+  supportEnergy Int       @default(100)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  accounts        Account[]
-  sessions        Session[]
-  founderProfile  FounderProfile?
-  tokens          LaunchToken[]
-  actions         PlayerAction[]
-  supportActions  SupportAction[]
-  crewMemberships CrewMember[]
-  adminActions    AdminAction[] @relation("AdminActionActor")
-  crewActions     CrewAction[] @relation("CrewActionCreator")
-  startedRivalries Rivalry[] @relation("RivalryStarter")
+  accounts         Account[]
+  sessions         Session[]
+  founderProfile   FounderProfile?
+  tokens           LaunchToken[]
+  actions          PlayerAction[]
+  supportActions   SupportAction[]
+  crewMemberships  CrewMember[]
+  adminActions     AdminAction[]   @relation("AdminActionActor")
+  crewActions      CrewAction[]    @relation("CrewActionCreator")
+  startedRivalries Rivalry[]       @relation("RivalryStarter")
 }
 
 model Account {
@@ -90,15 +91,15 @@ model FounderProfile {
 }
 
 model Season {
-  id         String          @id @default(cuid())
-  name       String
-  slug       String          @unique
-  status     String          @default("upcoming")
-  startsAt   DateTime
-  endsAt     DateTime
-  rulesJson  Json?
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  status    String   @default("upcoming")
+  startsAt  DateTime
+  endsAt    DateTime
+  rulesJson Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   tokens     LaunchToken[]
   narratives NarrativeMeta[]
@@ -165,20 +166,20 @@ model LaunchToken {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
-  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  season       Season?         @relation(fields: [seasonId], references: [id])
-  crew         Crew?           @relation(fields: [crewId], references: [id])
-  ticks        TokenTick[]
-  actions      PlayerAction[]
-  events       GameEvent[]
-  crewActions  CrewAction[]
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  season         Season?         @relation(fields: [seasonId], references: [id])
+  crew           Crew?           @relation(fields: [crewId], references: [id])
+  ticks          TokenTick[]
+  actions        PlayerAction[]
+  events         GameEvent[]
+  crewActions    CrewAction[]
   supportActions SupportAction[]
-  imageJobs    ImageJob[]
-  rivalriesA   Rivalry[]       @relation("RivalryTokenA")
-  rivalriesB   Rivalry[]       @relation("RivalryTokenB")
+  imageJobs      ImageJob[]
+  rivalriesA     Rivalry[]       @relation("RivalryTokenA")
+  rivalriesB     Rivalry[]       @relation("RivalryTokenB")
 
-  @@index([seasonId, status, score])
   @@unique([userId, ticker])
+  @@index([seasonId, status, score])
 }
 
 model TokenTick {
@@ -199,13 +200,13 @@ model TokenTick {
 }
 
 model PlayerAction {
-  id         String   @id @default(cuid())
-  userId     String
-  tokenId    String
-  actionType String
-  cost       Float
-  energyCost Int
-  resultJson      Json?
+  id             String   @id @default(cuid())
+  userId         String
+  tokenId        String
+  actionType     String
+  cost           Float
+  energyCost     Int
+  resultJson     Json?
   idempotencyKey String?  @unique
   createdAt      DateTime @default(now())
 
@@ -214,22 +215,23 @@ model PlayerAction {
 
   @@index([tokenId, createdAt])
   @@index([userId, createdAt])
+  @@index([userId, tokenId, actionType, createdAt])
 }
 
 model GameEvent {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   tokenId     String?
   seasonId    String?
   crewId      String?
   type        String
   title       String
   description String
-  source      String   @default("system")
+  source      String    @default("system")
   impactJson  Json?
   choicesJson Json?
   severity    String
   resolvedAt  DateTime?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
 
   token  LaunchToken? @relation(fields: [tokenId], references: [id])
   season Season?      @relation(fields: [seasonId], references: [id])
@@ -290,21 +292,23 @@ model CrewAction {
 }
 
 model SupportAction {
-  id         String   @id @default(cuid())
-  userId     String
-  tokenId    String
-  crewId     String?
-  actionType String
-  energyCost Int
-  impactJson Json?
-  createdAt  DateTime @default(now())
+  id             String   @id @default(cuid())
+  userId         String
+  tokenId        String
+  crewId         String?
+  actionType     String
+  energyCost     Int
+  impactJson     Json?
+  idempotencyKey String?  @unique
+  createdAt      DateTime @default(now())
 
-  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  token LaunchToken  @relation(fields: [tokenId], references: [id], onDelete: Cascade)
-  crew  Crew?        @relation(fields: [crewId], references: [id])
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token LaunchToken @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+  crew  Crew?       @relation(fields: [crewId], references: [id])
 
   @@index([tokenId, createdAt])
   @@index([userId, createdAt])
+  @@index([userId, tokenId, actionType, createdAt])
 }
 
 model Rivalry {
@@ -317,9 +321,9 @@ model Rivalry {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  tokenA  LaunchToken @relation("RivalryTokenA", fields: [tokenAId], references: [id], onDelete: Cascade)
-  tokenB  LaunchToken @relation("RivalryTokenB", fields: [tokenBId], references: [id], onDelete: Cascade)
-  startedBy User      @relation("RivalryStarter", fields: [startedByUserId], references: [id], onDelete: Cascade)
+  tokenA    LaunchToken @relation("RivalryTokenA", fields: [tokenAId], references: [id], onDelete: Cascade)
+  tokenB    LaunchToken @relation("RivalryTokenB", fields: [tokenBId], references: [id], onDelete: Cascade)
+  startedBy User        @relation("RivalryStarter", fields: [startedByUserId], references: [id], onDelete: Cascade)
 }
 
 model AiGeneratedContent {
@@ -368,13 +372,13 @@ model ScoreSnapshot {
 }
 
 model AdminAction {
-  id          String   @id @default(cuid())
-  actorId     String
-  actionType  String
-  targetType  String
-  targetId    String?
-  detailJson  Json?
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  actorId    String
+  actionType String
+  targetType String
+  targetId   String?
+  detailJson Json?
+  createdAt  DateTime @default(now())
 
   actor User @relation("AdminActionActor", fields: [actorId], references: [id], onDelete: Cascade)
 

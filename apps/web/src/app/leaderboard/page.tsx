@@ -99,7 +99,7 @@ export default async function LeaderboardPage({
               return (
                 <Link
                   className="grid gap-3 rounded-lg border border-white/10 bg-slate-950/55 p-4 hover:border-amber-300/50 md:grid-cols-[4rem_1fr_10rem] md:items-center"
-                  href={`/launch/${token.id}/manage`}
+                  href={`/token/${token.id}` as Route}
                   key={snapshot.id}
                 >
                   <div className="flex items-center gap-3 md:block">
