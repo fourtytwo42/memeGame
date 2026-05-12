@@ -11,6 +11,7 @@ EnvironmentFile=/home/hendo420/memeGame/.env
 Environment=NODE_ENV=production
 Environment=REALTIME_PORT=3001
 Environment=REALTIME_HOST=127.0.0.1
+Environment=WEB_ORIGIN=http://192.168.50.209,http://localhost:3000,http://127.0.0.1:3000
 ExecStart=/usr/bin/bash -lc 'corepack pnpm --filter @meme-foundry/realtime-app start'
 Restart=always
 RestartSec=5

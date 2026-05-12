@@ -23,10 +23,12 @@ export function RealtimeStatus({
     "connecting"
   );
   const [messages, setMessages] = useState<RealtimeMessage[]>([]);
-  const url = useMemo(
-    () => process.env.NEXT_PUBLIC_REALTIME_URL ?? "http://192.168.50.209:3001",
-    []
-  );
+  const url = useMemo(() => {
+    if (process.env.NEXT_PUBLIC_REALTIME_URL) {
+      return process.env.NEXT_PUBLIC_REALTIME_URL;
+    }
+    return typeof window === "undefined" ? undefined : window.location.origin;
+  }, []);
 
   useEffect(() => {
     const socket: Socket = io(url, {
