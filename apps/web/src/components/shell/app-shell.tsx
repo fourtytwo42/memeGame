@@ -91,6 +91,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         <nav aria-label="Primary" className="mt-5 grid gap-2">
           {nav.map((item) => (
             <Link
+              aria-label={item.label}
               key={item.href}
               className="group inline-flex min-h-12 items-center gap-3 rounded-md border border-transparent px-3 py-2 text-sm font-black uppercase tracking-wide text-slate-300 hover:border-lime-300/40 hover:bg-lime-300/10 hover:text-lime-200"
               href={item.href}
@@ -104,7 +105,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
           ))}
         </nav>
-        <div className="mt-auto grid gap-3">
+        <div className="mt-auto grid gap-3 pb-16 sm:pb-0">
           <IconHelpButton
             help="Notifications will show urgent launch events, crew support, and system health changes."
             label="Notifications"

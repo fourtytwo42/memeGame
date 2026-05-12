@@ -1,6 +1,7 @@
 # Test and Verification Commands
 
-Stage 2 wires the command surface that later stages must fill with production coverage.
+Stage 2 wired the command surface. Stage 15 replaces the remaining placeholder
+release gates with real browser, accessibility, and stress checks.
 
 ```bash
 pnpm typecheck
@@ -21,6 +22,19 @@ pnpm build
 pnpm verify
 ```
 
-`test:browser-audit` is a placeholder command until live browser-use audit scripts and notes are added with the first user-facing stages. The acceptance gate still requires using `browser-use:browser` against the running app.
+`test:browser-audit` runs `scripts/stage15-browser-audit.ts`. It starts or
+reuses the VM web server, signs in through the real UI, resolves live dynamic
+routes from Prisma, verifies the PRD route set, confirms the left-side
+navigation contract, and rejects banned real-trading/wallet language.
 
-`test:stress` and `test:scale` are wired placeholders in Stage 2 so later implementation can replace them without changing the release command contract.
+`test:a11y` runs `scripts/stage15-a11y.ts`. It checks the same route set for
+basic release-blocking accessibility issues: main landmarks, primary
+navigation, h1s, image alt text, named controls, and labeled form fields.
+
+`test:stress` runs `scripts/stage15-stress.ts`. It creates deterministic
+synthetic founders/supporters, runs concurrent launch actions and support
+actions, refreshes narratives/leaderboards, and fails if the duration budget or
+state-write evidence is missing.
+
+Browser-use visual and playtest evidence is still required by the Stage 15
+roadmap in addition to these repeatable automated gates.

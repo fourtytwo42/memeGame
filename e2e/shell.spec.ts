@@ -6,17 +6,10 @@ function visibleManageLink(page: import("@playwright/test").Page) {
 
 test("shell exposes icon-only help", async ({ page }) => {
   await page.goto("/");
-  const viewportWidth = page.viewportSize()?.width ?? 0;
-  const shell =
-    viewportWidth >= 768
-      ? page.getByTestId("desktop-left-nav")
-      : page.getByTestId("app-shell-topbar");
+  const shell = page.getByTestId("desktop-left-nav");
 
-  if (viewportWidth >= 768) {
-    await expect(shell).toContainText("Play");
-  } else {
-    await expect(page.getByTestId("mobile-bottom-nav")).toContainText("Play");
-  }
+  await expect(shell).toBeVisible();
+  await expect(shell.getByRole("link", { name: "Play" })).toBeVisible();
 
   const notifications = shell.locator(
     '[data-testid="icon-help-button"]:visible'
