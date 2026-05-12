@@ -10,6 +10,7 @@ WorkingDirectory=/home/hendo420/memeGame
 EnvironmentFile=/home/hendo420/memeGame/.env
 Environment=NODE_ENV=production
 Environment=AI_SERVICE_PORT=3002
+Environment=AI_SERVICE_HOST=127.0.0.1
 ExecStart=/usr/bin/bash -lc 'corepack pnpm --filter @meme-foundry/ai-service start'
 Restart=always
 RestartSec=5

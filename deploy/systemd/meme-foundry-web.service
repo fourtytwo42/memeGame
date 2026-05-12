@@ -9,7 +9,7 @@ User=hendo420
 WorkingDirectory=/home/hendo420/memeGame
 EnvironmentFile=/home/hendo420/memeGame/.env
 Environment=NODE_ENV=production
-ExecStart=/usr/bin/bash -lc 'corepack pnpm --filter @meme-foundry/web start -- -H 127.0.0.1 -p 3000'
+ExecStart=/usr/bin/bash -lc 'corepack pnpm --dir apps/web exec next start -H 127.0.0.1 -p 3000'
 Restart=always
 RestartSec=5
 

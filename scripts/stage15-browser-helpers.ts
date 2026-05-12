@@ -91,6 +91,7 @@ export async function signInAsAdmin(page: Page, baseUrl: string) {
   await page.getByLabel("Username or email").fill("spiderman.1983@gmail.com");
   await page.getByLabel("Password").fill("MemeFoundry!123");
   await page.getByRole("button", { name: "Sign in" }).click();
+  await page.waitForURL(`${baseUrl}/`, { timeout: 15_000 });
   await page.waitForLoadState("domcontentloaded");
   const url = new URL(page.url());
   if (url.pathname !== "/") {

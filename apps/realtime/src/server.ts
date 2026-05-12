@@ -28,6 +28,7 @@ declare module "socket.io" {
 }
 
 const port = Number(process.env.REALTIME_PORT ?? 3001);
+const host = process.env.REALTIME_HOST ?? "0.0.0.0";
 const redisUrl = process.env.REDIS_URL ?? "redis://localhost:6379";
 const redisKeyPrefix = process.env.REDIS_KEY_PREFIX ?? "meme:dev:";
 
@@ -239,7 +240,7 @@ export function createRealtimeServer(
 
 if (process.env.NODE_ENV !== "test") {
   const server = createRealtimeServer();
-  server.httpServer.listen(port, "0.0.0.0", () => {
-    console.log(JSON.stringify({ service: "realtime", port }));
+  server.httpServer.listen(port, host, () => {
+    console.log(JSON.stringify({ service: "realtime", host, port }));
   });
 }
