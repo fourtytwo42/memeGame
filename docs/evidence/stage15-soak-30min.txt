@@ -1,0 +1,64 @@
+$ tsx scripts/stage15-soak.ts
+{"iteration":1,"at":"2026-05-12T06:46:34.746Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":300,"socketClients":0,"durationMs":64}
+{"iteration":2,"at":"2026-05-12T06:47:34.828Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":300,"socketClients":0,"durationMs":32}
+{"iteration":3,"at":"2026-05-12T06:48:34.908Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":300,"socketClients":0,"durationMs":29}
+{"iteration":4,"at":"2026-05-12T06:49:34.990Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":300,"socketClients":0,"durationMs":32}
+{"iteration":5,"at":"2026-05-12T06:50:35.082Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":300,"socketClients":0,"durationMs":41}
+{"iteration":6,"at":"2026-05-12T06:51:35.173Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":300,"socketClients":0,"durationMs":40}
+{"iteration":7,"at":"2026-05-12T06:52:35.258Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":300,"socketClients":0,"durationMs":35}
+{"iteration":8,"at":"2026-05-12T06:53:35.437Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":300,"socketClients":0,"durationMs":129}
+{"iteration":9,"at":"2026-05-12T06:54:35.537Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":300,"socketClients":0,"durationMs":50}
+{"iteration":10,"at":"2026-05-12T06:55:35.628Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":300,"socketClients":0,"durationMs":40}
+{"iteration":11,"at":"2026-05-12T06:56:35.723Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":300,"socketClients":0,"durationMs":45}
+{"iteration":12,"at":"2026-05-12T06:57:35.814Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":300,"socketClients":0,"durationMs":41}
+{"iteration":13,"at":"2026-05-12T06:58:35.896Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":300,"socketClients":0,"durationMs":32}
+{"iteration":14,"at":"2026-05-12T06:59:35.975Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":300,"socketClients":0,"durationMs":29}
+{"iteration":15,"at":"2026-05-12T07:00:36.050Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":300,"socketClients":0,"durationMs":25}
+{"iteration":16,"at":"2026-05-12T07:01:36.132Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":300,"socketClients":0,"durationMs":32}
+{"iteration":17,"at":"2026-05-12T07:02:36.223Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":300,"socketClients":0,"durationMs":40}
+{"iteration":18,"at":"2026-05-12T07:03:36.313Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":200,"socketClients":0,"durationMs":40}
+{"iteration":19,"at":"2026-05-12T07:04:36.387Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":200,"socketClients":0,"durationMs":25}
+{"iteration":20,"at":"2026-05-12T07:05:36.464Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":200,"socketClients":0,"durationMs":26}
+{"iteration":21,"at":"2026-05-12T07:06:36.558Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":200,"socketClients":0,"durationMs":44}
+{"iteration":22,"at":"2026-05-12T07:07:36.643Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":100,"socketClients":0,"durationMs":35}
+{"iteration":23,"at":"2026-05-12T07:08:36.731Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":100,"socketClients":0,"durationMs":38}
+{"iteration":24,"at":"2026-05-12T07:09:36.823Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":100,"socketClients":0,"durationMs":42}
+{"iteration":25,"at":"2026-05-12T07:10:36.914Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":100,"socketClients":0,"durationMs":41}
+{"iteration":26,"at":"2026-05-12T07:11:36.995Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":100,"socketClients":0,"durationMs":30}
+{"iteration":27,"at":"2026-05-12T07:12:37.072Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":100,"socketClients":0,"durationMs":27}
+{"iteration":28,"at":"2026-05-12T07:13:37.158Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":100,"socketClients":0,"durationMs":36}
+{"iteration":29,"at":"2026-05-12T07:14:37.237Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":100,"socketClients":0,"durationMs":29}
+{"iteration":30,"at":"2026-05-12T07:15:37.326Z","web":true,"realtime":true,"dbUsers":207,"liveTokens":74,"queuedImages":4,"failedImages":1,"aiFallbacksLastHour":100,"socketClients":0,"durationMs":39}
+{
+  "ok": true,
+  "durationMinutes": 30,
+  "intervalSeconds": 60,
+  "iterations": 30,
+  "elapsedSeconds": 1743,
+  "baselineFailedImages": 1,
+  "maxFailedImages": 1,
+  "first": {
+    "at": "2026-05-12T06:46:34.746Z",
+    "web": true,
+    "realtime": true,
+    "dbUsers": 207,
+    "liveTokens": 74,
+    "queuedImages": 4,
+    "failedImages": 1,
+    "aiFallbacksLastHour": 300,
+    "socketClients": 0,
+    "durationMs": 64
+  },
+  "last": {
+    "at": "2026-05-12T07:15:37.326Z",
+    "web": true,
+    "realtime": true,
+    "dbUsers": 207,
+    "liveTokens": 74,
+    "queuedImages": 4,
+    "failedImages": 1,
+    "aiFallbacksLastHour": 100,
+    "socketClients": 0,
+    "durationMs": 39
+  }
+}

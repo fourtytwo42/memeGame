@@ -80,6 +80,7 @@ export default async function PlayPage({ searchParams }: PlayProps) {
               <Badge tone={hasToken ? "good" : "warn"}>
                 {hasToken ? "Active token" : "First launch"}
               </Badge>
+              <Badge tone="neutral">No real trading</Badge>
               <span className="text-sm font-bold text-slate-300">
                 Signed in as {session.user.username}
               </span>

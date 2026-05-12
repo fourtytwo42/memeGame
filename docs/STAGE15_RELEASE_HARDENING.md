@@ -81,6 +81,9 @@ Observed results:
 - `pnpm test:soak` runs `scripts/stage15-soak.ts`; a short smoke run passed
   with stable web/realtime health and failed-image count held at the starting
   degraded-state baseline.
+- 30-minute soak passed with 30 samples and `elapsedSeconds: 1743`; evidence is
+  stored in `docs/evidence/stage15-soak-30min.txt` and
+  `docs/evidence/stage15-soak-exit.txt`.
 - `test:release` now includes `pnpm test:a11y`.
 - Fallback season commentary clamps generated titles to the schema limit after
   a long synthetic season name exposed the issue during release verification.
@@ -109,12 +112,26 @@ For every captured route, the browser-use DOM snapshot confirmed:
 - top/bottom primary navigation is absent;
 - the page loads nonblank content.
 
+## Browser-Use Playtesting During Soak
+
+Browser-use mock-user checks during the 30-minute soak covered:
+
+- founder sign-in with keyboard fallback;
+- `/play` hub, manage affordance, active launch dashboard, action tradeoffs,
+  and realtime status;
+- supporter sign-in, public token support action, support success, and
+  cooldown state;
+- crew page, leaderboard side menu, and founder/admin access boundaries;
+- admin sign-in and admin control room health/counts/reports/image jobs.
+
+The `/play` hub now includes a first-viewport `No real trading` badge after the
+approachability pass showed that safety cue was missing from the play hub.
+
 ## Remaining Stage 15 Work
 
 - `docs/RELEASE_RUNBOOK.md` now covers host-native preflight,
   verification, service install/restart, health checks, backup/restore,
   rollback, soak/scale evidence, and final release checklist.
-- A full 30-minute soak still needs to be run and recorded.
 - Complete browser-use visual audits/playtests for all major flows.
 - Complete soak, security, dependency, backup/restore, scale, degraded-mode,
   and release evidence.
