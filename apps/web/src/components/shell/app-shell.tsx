@@ -80,7 +80,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             {activeToken ? (
               <Link
                 className="hidden rounded-md border border-emerald-300/30 bg-emerald-300/10 px-3 py-2 text-sm font-black text-emerald-100 hover:bg-emerald-300/20 sm:inline-flex"
-                href="/play"
+                href={`/launch/${activeToken.id}/manage` as Route}
                 data-testid="manage-launch-affordance"
               >
                 Manage {activeToken.ticker}

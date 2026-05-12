@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@meme-foundry/db";
 import { createDefaultTokenState } from "@meme-foundry/game-engine";
 import { launchTokenSchema } from "@meme-foundry/validation";
+import type { Route } from "next";
 import { redirect } from "next/navigation";
 
 export type LaunchActionState = { error?: string };
@@ -114,6 +115,7 @@ export async function createLaunch(
         fatigue: defaults.fatigue,
         treasury: defaults.treasury,
         gameProfit: defaults.gameProfit,
+        energy: 100,
         score: defaults.score,
         events: {
           create: {
@@ -152,7 +154,7 @@ export async function createLaunch(
       })
     ]);
 
-    redirect(`/play?launched=${token.id}`);
+    redirect(`/launch/${token.id}/manage?launched=1` as Route);
   } catch (error) {
     if (error instanceof Error && error.message.includes("Unique constraint")) {
       return { error: "You already used that ticker. Pick a different one." };

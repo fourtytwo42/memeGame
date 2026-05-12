@@ -157,6 +157,7 @@ model LaunchToken {
   fudPressure         Int       @default(5)
   fatigue             Int       @default(0)
   treasury            Float     @default(1000)
+  energy              Int       @default(100)
   gameProfit          Float     @default(0)
   score               Int       @default(0)
   launchedAt          DateTime?
@@ -204,8 +205,9 @@ model PlayerAction {
   actionType String
   cost       Float
   energyCost Int
-  resultJson Json?
-  createdAt  DateTime @default(now())
+  resultJson      Json?
+  idempotencyKey String?  @unique
+  createdAt      DateTime @default(now())
 
   user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   token LaunchToken @relation(fields: [tokenId], references: [id], onDelete: Cascade)

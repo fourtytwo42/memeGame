@@ -51,7 +51,7 @@ test("first-time player creates founder profile and launches token", async ({
   await expect(page.getByTestId("recommended-action-card")).toContainText(
     "Create founder profile"
   );
-  await page.getByRole("link", { name: "Take recommended action" }).click();
+  await page.getByRole("link", { name: "Create founder profile" }).click();
   await expect(page.getByTestId("founder-profile-form")).toBeVisible();
   await page.getByLabel("Founder display name").fill("Rookie Founder");
   await page
@@ -76,19 +76,39 @@ test("first-time player creates founder profile and launches token", async ({
   );
   await page.getByRole("button", { name: "Review and launch" }).click();
 
-  await expect(page).toHaveURL(/\/play\?launched=/);
-  await expect(page.getByTestId("play-primary-panel")).toContainText(
+  await expect(page).toHaveURL(/\/launch\/.+\/manage\?launched=1/);
+  await expect(page.getByTestId("manage-token-header")).toContainText(
     "Manage Rookie Reactor"
   );
-  await expect(page.getByTestId("recommended-action-card")).toContainText(
-    "Post a meme pack"
+  await expect(page.getByTestId("action-panel")).toContainText("Post Meme");
+
+  for (const actionId of [
+    "POST_MEME",
+    "COMMISSION_ART",
+    "OPEN_COMMUNITY_CHAT"
+  ]) {
+    await page
+      .getByTestId(`action-card-${actionId}-panel`)
+      .getByRole("button", { name: "Take action" })
+      .click();
+    await expect(page).toHaveURL(new RegExp(`action=${actionId}`));
+  }
+  await expect(page.getByTestId("recent-action-feed")).toContainText(
+    "Open Community Chat"
   );
 
   const token = await prisma.launchToken.findFirst({
-    where: { ticker, user: { email } }
+    where: { ticker, user: { email } },
+    include: { actions: true, ticks: true, events: true }
   });
   expect(token?.status).toBe("live");
   expect(token?.placeholderImageUrl).toBe(
     "/assets/game/tokens/default-token-placeholder.svg"
+  );
+  expect(token?.energy).toBeLessThan(100);
+  expect(token?.actions.length).toBeGreaterThanOrEqual(3);
+  expect(token?.ticks.length).toBeGreaterThanOrEqual(3);
+  expect(token?.events.some((event) => event.type === "player_action")).toBe(
+    true
   );
 });

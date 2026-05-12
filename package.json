@@ -16,7 +16,7 @@
     "test": "vitest run",
     "test:integration": "vitest run tests/integration",
     "test:e2e": "playwright test",
-    "test:workers": "node scripts/stage2-placeholder.mjs workers",
+    "test:workers": "tsx scripts/simulate-token-tick.ts",
     "test:browser-audit": "node scripts/browser-audit-placeholder.mjs",
     "test:a11y": "node scripts/stage2-placeholder.mjs a11y",
     "test:stress": "node scripts/stage2-placeholder.mjs stress",
@@ -32,7 +32,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset --force",
     "db:test:reset": "node scripts/reset-test-db.mjs",
-    "db:seed:scale": "tsx scripts/seed-scale.ts"
+    "db:seed:scale": "tsx scripts/seed-scale.ts",
+    "simulate:tick": "tsx scripts/simulate-token-tick.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
