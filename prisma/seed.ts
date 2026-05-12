@@ -108,6 +108,11 @@ async function main() {
     name: "Admin Founder",
     role: "admin"
   });
+  await upsertUser({
+    email: "rookie@example.com",
+    username: "rookie",
+    name: "Rookie Player"
+  });
 
   for (const user of [founder, supporter, crewUser, admin]) {
     await prisma.founderProfile.upsert({

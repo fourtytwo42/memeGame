@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Default Meme Foundry token placeholder</title>
+  <desc id="desc">Transparent placeholder token badge with an anvil, spark, and launch ring.</desc>
+  <g fill="none" fill-rule="evenodd">
+    <circle cx="256" cy="256" r="188" fill="#10b981" opacity="0.18"/>
+    <circle cx="256" cy="256" r="146" fill="#0f172a" stroke="#34d399" stroke-width="12"/>
+    <path fill="#f8fafc" d="M162 296h188c12 0 22 10 22 22v14H140v-14c0-12 10-22 22-22Z"/>
+    <path fill="#94a3b8" d="M195 206h122l-18 70H213l-18-70Z"/>
+    <path fill="#e2e8f0" d="M184 184h144c9 0 16 7 16 16v16H168v-16c0-9 7-16 16-16Z"/>
+    <path fill="#34d399" d="M256 116l18 46h49l-39 30 15 48-43-28-43 28 15-48-39-30h49l18-46Z"/>
+    <path fill="#fbbf24" d="M386 170l10 26 28 2-22 17 7 27-23-15-24 15 8-27-22-17 28-2 10-26Z"/>
+  </g>
+</svg>

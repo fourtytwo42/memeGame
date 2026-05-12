@@ -33,5 +33,26 @@
     "game/share",
     "ui/empty-states"
   ],
-  "assets": []
+  "assets": [
+    {
+      "id": "default-token-placeholder-svg",
+      "category": "game/tokens",
+      "sourcePrompt": "Procedural transparent SVG placeholder for launches before generated mascot art is ready.",
+      "sourceImagePath": null,
+      "finalAssetPath": "apps/web/public/assets/game/tokens/default-token-placeholder.svg",
+      "keyColor": null,
+      "backgroundRemovalMethod": "code-native transparent SVG",
+      "dimensions": {
+        "width": 512,
+        "height": 512
+      },
+      "format": "svg",
+      "usage": "Default token card and launch wizard preview when image generation is disabled or queued.",
+      "altText": "Default Meme Foundry token placeholder badge.",
+      "status": "ready",
+      "reviewNotes": "Transparent SVG fallback; production imagegen mascots are generated in later asset stages.",
+      "createdAt": "2026-05-12",
+      "updatedAt": "2026-05-12"
+    }
+  ]
 }

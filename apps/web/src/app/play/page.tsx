@@ -14,7 +14,8 @@ export default async function PlayPage() {
   const session = await auth();
   if (!session?.user) redirect("/signin");
 
-  const [token, events, narratives] = await Promise.all([
+  const [profile, token, events, narratives] = await Promise.all([
+    prisma.founderProfile.findUnique({ where: { userId: session.user.id } }),
     prisma.launchToken.findFirst({
       where: { userId: session.user.id },
       orderBy: { updatedAt: "desc" }
@@ -45,15 +46,35 @@ export default async function PlayPage() {
             </p>
           </Panel>
           <RecommendedActionCard
-            href={token ? "/play" : "/launch/new"}
-            title={token ? "Post a meme pack" : "Create your first token"}
-            reason={
-              token
-                ? "Attention is useful right now, but the action still explains fatigue before you commit."
-                : "You do not have an active launch yet, so the fastest useful move is creating one."
+            href={!profile ? "/profile" : token ? "/play" : "/launch/new"}
+            title={
+              !profile
+                ? "Create founder profile"
+                : token
+                  ? "Post a meme pack"
+                  : "Create your first token"
             }
-            helps={token ? "Growth, community" : "First run, learning"}
-            risks={token ? "A little fatigue" : "No gameplay risk"}
+            reason={
+              !profile
+                ? "Set up your founder identity first. It takes one short form and makes the launch yours."
+                : token
+                  ? "Attention is useful right now, but the action still explains fatigue before you commit."
+                  : "You do not have an active launch yet, so the fastest useful move is creating one."
+            }
+            helps={
+              !profile
+                ? "Onboarding, identity"
+                : token
+                  ? "Growth, community"
+                  : "First run, learning"
+            }
+            risks={
+              !profile
+                ? "No gameplay risk"
+                : token
+                  ? "A little fatigue"
+                  : "No gameplay risk"
+            }
           />
           <StatGroupSummary />
         </section>

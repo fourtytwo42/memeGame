@@ -1,49 +1,54 @@
+import { redirect } from "next/navigation";
 import { Badge, Panel } from "@meme-foundry/ui";
+import { auth } from "@/auth";
 import { AppShell } from "@/components/shell/app-shell";
+import { LaunchWizardForm } from "@/components/launch/launch-wizard-form";
+import { prisma } from "@meme-foundry/db";
 
-export default function LaunchNewPage() {
-  const steps = ["Basics", "Narrative", "Mascot", "Strategy", "Review"];
+export const dynamic = "force-dynamic";
+
+export default async function LaunchNewPage() {
+  const session = await auth();
+  if (!session?.user) redirect("/signin");
+  const profile = await prisma.founderProfile.findUnique({
+    where: { userId: session.user.id }
+  });
+  if (!profile) redirect("/profile");
+
+  const season = await prisma.season.findFirst({
+    where: { status: "active" },
+    orderBy: { startsAt: "desc" }
+  });
+  const narratives = season
+    ? await prisma.narrativeMeta.findMany({
+        where: { seasonId: season.id },
+        orderBy: [{ heat: "desc" }, { name: "asc" }],
+        take: 8
+      })
+    : [];
+
   return (
     <AppShell>
-      <div
-        className="grid gap-4 lg:grid-cols-[1fr_22rem]"
-        data-testid="launch-wizard-shell"
-      >
+      <div className="mb-4" data-testid="launch-wizard-shell">
         <Panel>
           <Badge tone="good">Fast guided launch</Badge>
           <h1 className="mt-3 text-3xl font-black text-white">Launch wizard</h1>
-          <p className="mt-3 text-sm leading-6 text-slate-300">
-            Stage 4 shell placeholder for the production wizard. The final flow
-            will ask only what makes the token feel personal and will never
-            block on image generation.
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
+            Create a simulated token in one guided pass. The preview updates
+            immediately, narrative choices use plain opportunity labels, and
+            placeholder art means launch never waits for AI or image generation.
           </p>
-          <div className="mt-5 grid gap-2 sm:grid-cols-5">
-            {steps.map((step, index) => (
-              <div
-                key={step}
-                className="rounded-md border border-white/10 bg-slate-950/50 p-3"
-              >
-                <p className="text-xs font-bold text-slate-500">
-                  Step {index + 1}
-                </p>
-                <p className="font-black text-white">{step}</p>
-              </div>
-            ))}
-          </div>
-        </Panel>
-        <Panel data-testid="token-preview-card">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-            Live preview
-          </p>
-          <div className="mt-4 aspect-square rounded-lg border border-dashed border-emerald-300/40 bg-emerald-300/10 p-4">
-            <p className="text-lg font-black text-white">Token card preview</p>
-            <p className="mt-2 text-sm text-slate-300">
-              Placeholder art is allowed here; final mascot generation never
-              blocks launch.
-            </p>
-          </div>
         </Panel>
       </div>
+      <LaunchWizardForm
+        narratives={narratives.map((narrative) => ({
+          slug: narrative.slug,
+          name: narrative.name,
+          heat: narrative.heat,
+          saturation: narrative.saturation,
+          fatigue: narrative.fatigue
+        }))}
+      />
     </AppShell>
   );
 }

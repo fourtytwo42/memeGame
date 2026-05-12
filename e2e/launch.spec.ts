@@ -1,0 +1,94 @@
+import { expect, test } from "@playwright/test";
+import { hash } from "bcryptjs";
+import { prisma } from "../packages/db/src/index";
+
+const password = "MemeFoundry!123";
+
+function rookieEmail(projectName: string) {
+  return `rookie-${projectName.replace(/[^a-z0-9]/gi, "-").toLowerCase()}@example.com`;
+}
+
+test.beforeEach(async ({}, testInfo) => {
+  const email = rookieEmail(testInfo.project.name);
+  const passwordHash = await hash(password, 12);
+  const rookie = await prisma.user.upsert({
+    where: { email },
+    update: {
+      name: `Rookie ${testInfo.project.name}`,
+      passwordHash,
+      role: "user",
+      status: "active",
+      username: `rookie_${testInfo.project.name.replace(/[^a-z0-9]/gi, "_").toLowerCase()}`
+    },
+    create: {
+      email,
+      name: `Rookie ${testInfo.project.name}`,
+      passwordHash,
+      username: `rookie_${testInfo.project.name.replace(/[^a-z0-9]/gi, "_").toLowerCase()}`
+    }
+  });
+  await prisma.launchToken.deleteMany({ where: { userId: rookie.id } });
+  await prisma.founderProfile.deleteMany({ where: { userId: rookie.id } });
+});
+
+test.afterAll(async () => {
+  await prisma.$disconnect();
+});
+
+test("first-time player creates founder profile and launches token", async ({
+  page
+}, testInfo) => {
+  const email = rookieEmail(testInfo.project.name);
+  const ticker = `RK${Date.now().toString().slice(-6)}`;
+
+  await page.goto("/signin");
+  await page.getByLabel("Username or email").fill(email);
+  await page.getByLabel("Password").fill(password);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL("/");
+
+  await page.goto("/play");
+  await expect(page.getByTestId("recommended-action-card")).toContainText(
+    "Create founder profile"
+  );
+  await page.getByRole("link", { name: "Take recommended action" }).click();
+  await expect(page.getByTestId("founder-profile-form")).toBeVisible();
+  await page.getByLabel("Founder display name").fill("Rookie Founder");
+  await page
+    .getByLabel("Founder bio")
+    .fill("Learning the launch loop through clear choices.");
+  await page.getByRole("button", { name: "Save founder profile" }).click();
+
+  await expect(page.getByTestId("launch-wizard-form")).toBeVisible();
+  await page.getByLabel("Token name").fill("Rookie Reactor");
+  await page.getByLabel("Ticker").fill(ticker);
+  await page
+    .getByLabel("Description")
+    .fill("A fictional launch for learning the first Meme Foundry loop.");
+  await page
+    .getByLabel("Mascot concept")
+    .fill("a rookie reactor mascot with a bright helmet");
+  await expect(page.getByTestId("live-token-preview")).toContainText(
+    "Rookie Reactor"
+  );
+  await expect(page.getByTestId("wizard-review-step")).toContainText(
+    "No real trading"
+  );
+  await page.getByRole("button", { name: "Review and launch" }).click();
+
+  await expect(page).toHaveURL(/\/play\?launched=/);
+  await expect(page.getByTestId("play-primary-panel")).toContainText(
+    "Manage Rookie Reactor"
+  );
+  await expect(page.getByTestId("recommended-action-card")).toContainText(
+    "Post a meme pack"
+  );
+
+  const token = await prisma.launchToken.findFirst({
+    where: { ticker, user: { email } }
+  });
+  expect(token?.status).toBe("live");
+  expect(token?.placeholderImageUrl).toBe(
+    "/assets/game/tokens/default-token-placeholder.svg"
+  );
+});
