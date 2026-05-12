@@ -108,3 +108,190 @@ export function StatBar({
     </div>
   );
 }
+
+export function Tabs({
+  tabs,
+  activeId
+}: {
+  tabs: Array<{ id: string; label: string; content: ReactNode }>;
+  activeId?: string;
+}) {
+  const active = activeId ?? tabs[0]?.id;
+  return (
+    <div data-testid="ui-tabs">
+      <div
+        className="flex gap-1 overflow-x-auto rounded-lg border border-white/10 bg-slate-950/60 p-1"
+        role="tablist"
+      >
+        {tabs.map((tab) => (
+          <button
+            aria-selected={tab.id === active}
+            className={joinClasses(
+              "min-h-10 shrink-0 rounded-md px-3 py-2 text-sm font-black",
+              tab.id === active
+                ? "bg-emerald-300 text-slate-950"
+                : "text-slate-300 hover:bg-white/10 hover:text-white"
+            )}
+            key={tab.id}
+            role="tab"
+            type="button"
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      {tabs.map((tab) => (
+        <div hidden={tab.id !== active} key={tab.id} role="tabpanel">
+          {tab.content}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function ModalFrame({
+  title,
+  children,
+  open = true
+}: {
+  title: string;
+  children: ReactNode;
+  open?: boolean;
+}) {
+  if (!open) return null;
+  return (
+    <div
+      className="rounded-lg border border-white/10 bg-slate-950 p-5 shadow-2xl"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      data-testid="ui-modal-frame"
+    >
+      <h2 className="text-xl font-black text-white">{title}</h2>
+      <div className="mt-3 text-sm leading-6 text-slate-300">{children}</div>
+    </div>
+  );
+}
+
+export function FormField({
+  label,
+  hint,
+  children
+}: {
+  label: string;
+  hint?: string;
+  children: ReactNode;
+}) {
+  return (
+    <label
+      className="grid gap-2 text-sm font-bold text-slate-200"
+      data-testid="ui-form-field"
+    >
+      {label}
+      {children}
+      {hint ? (
+        <span className="text-xs leading-5 text-slate-500">{hint}</span>
+      ) : null}
+    </label>
+  );
+}
+
+export function ToastMessage({
+  title,
+  detail,
+  tone = "good"
+}: {
+  title: string;
+  detail: string;
+  tone?: "good" | "warn" | "bad";
+}) {
+  return (
+    <div
+      className="rounded-lg border border-white/10 bg-slate-950 p-4"
+      role="status"
+      data-testid="ui-toast"
+    >
+      <Badge tone={tone}>{tone}</Badge>
+      <h2 className="mt-2 font-black text-white">{title}</h2>
+      <p className="mt-1 text-sm leading-5 text-slate-300">{detail}</p>
+    </div>
+  );
+}
+
+export function LoadingState({ label = "Loading" }: { label?: string }) {
+  return (
+    <div
+      className="grid min-h-32 place-items-center rounded-lg border border-white/10 bg-white/[0.04] p-5 text-center"
+      data-testid="ui-loading-state"
+    >
+      <div>
+        <div className="mx-auto mb-3 size-8 animate-spin rounded-full border-2 border-emerald-300 border-t-transparent" />
+        <p className="font-black text-white">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+export function EmptyState({
+  title,
+  detail,
+  action
+}: {
+  title: string;
+  detail: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div
+      className="rounded-lg border border-dashed border-white/15 bg-white/[0.035] p-5 text-center"
+      data-testid="ui-empty-state"
+    >
+      <h2 className="text-xl font-black text-white">{title}</h2>
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-400">
+        {detail}
+      </p>
+      {action ? <div className="mt-4">{action}</div> : null}
+    </div>
+  );
+}
+
+export function ErrorState({
+  title,
+  detail
+}: {
+  title: string;
+  detail: string;
+}) {
+  return (
+    <div
+      className="rounded-lg border border-rose-300/30 bg-rose-400/10 p-5"
+      role="alert"
+      data-testid="ui-error-state"
+    >
+      <h2 className="text-xl font-black text-rose-100">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-rose-100/80">{detail}</p>
+    </div>
+  );
+}
+
+export function DegradedState({
+  service,
+  detail
+}: {
+  service: string;
+  detail: string;
+}) {
+  return (
+    <div
+      className="rounded-lg border border-amber-300/30 bg-amber-300/10 p-4"
+      role="status"
+      data-testid="ui-degraded-state"
+    >
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-200">
+        Degraded
+      </p>
+      <h2 className="mt-1 font-black text-white">{service}</h2>
+      <p className="mt-2 text-sm leading-6 text-slate-300">{detail}</p>
+    </div>
+  );
+}

@@ -1,4 +1,37 @@
 {
-  "version": 1,
+  "schemaVersion": 1,
+  "workflow": {
+    "sourceDirectory": "assets/source/imagegen",
+    "finalAssetRoot": "apps/web/public/assets",
+    "defaultKeyColors": ["#00ff00", "#ff00ff"],
+    "backgroundRemovalMethod": "local chroma-key removal into alpha PNG/WebP",
+    "requiredFields": [
+      "id",
+      "category",
+      "sourcePrompt",
+      "sourceImagePath",
+      "finalAssetPath",
+      "keyColor",
+      "backgroundRemovalMethod",
+      "dimensions",
+      "format",
+      "usage",
+      "altText",
+      "status",
+      "reviewNotes",
+      "createdAt",
+      "updatedAt"
+    ]
+  },
+  "categories": [
+    "brand",
+    "game/narratives",
+    "game/tokens",
+    "game/status",
+    "game/npcs",
+    "game/crews",
+    "game/share",
+    "ui/empty-states"
+  ],
   "assets": []
 }

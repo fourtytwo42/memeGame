@@ -1,6 +1,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { auth } from "@/auth";
+import { IconHelpButton } from "@/components/shell/icon-help";
 import { signOutAction } from "@/app/signin/actions";
 import { prisma } from "@meme-foundry/db";
 import {
@@ -85,13 +86,12 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
                 Manage {activeToken.ticker}
               </Link>
             ) : null}
-            <button
-              aria-label="Notifications"
-              className="inline-flex size-10 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/10"
-              title="Notifications"
+            <IconHelpButton
+              help="Notifications will show urgent launch events, crew support, and system health changes."
+              label="Notifications"
             >
               <Bell aria-hidden="true" size={18} />
-            </button>
+            </IconHelpButton>
             {session?.user ? (
               <form action={signOutAction}>
                 <button
