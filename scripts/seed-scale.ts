@@ -9,6 +9,58 @@ const TARGETS = {
   ticks: Number(process.env.SCALE_TICKS ?? 100000)
 };
 
+const narrativeThemes = [
+  { name: "Frog Meta", slug: "frog-meta" },
+  { name: "Dog Season", slug: "dog-season" },
+  { name: "AI Agents", slug: "ai-agents" },
+  { name: "Wizard Cartel", slug: "wizard-cartel" },
+  { name: "Snack Finance", slug: "snack-finance" },
+  { name: "Retro Internet", slug: "retro-internet" },
+  { name: "Cozy Chaos", slug: "cozy-chaos" },
+  { name: "Space Pets", slug: "space-pets" }
+];
+
+const tokenThemes = [
+  ["Pond Lord", "POND"],
+  ["DogWifHat Lab", "WIF"],
+  ["Agent Meow", "MEOW"],
+  ["Wizard Pepe", "WIZ"],
+  ["Noodle Nation", "NOODLE"],
+  ["Retro Goblin", "GOBLIN"],
+  ["Snack Reactor", "SNACK"],
+  ["Moon Pup", "PUP"],
+  ["Based Bot", "BASED"],
+  ["Pixel Frog", "PIXEL"],
+  ["Banana Signal", "BANANA"],
+  ["Meme Smith", "SMITH"]
+] as const;
+
+const crewThemes = [
+  "Frog Foundry",
+  "Purple Forge",
+  "Meme Lordz",
+  "Pixel Pioneers",
+  "Chaos Crew",
+  "Degen Signal",
+  "Lore Keepers",
+  "Raid Garden",
+  "Snack Syndicate",
+  "Retro Guild"
+];
+
+const founderHandles = [
+  "froggypixels",
+  "memesmith",
+  "loreweaver",
+  "basedbot",
+  "hypeknight",
+  "wizardpepe",
+  "agentmeow",
+  "noodlehands",
+  "chaosmint",
+  "pondpilot"
+];
+
 function chunk<T>(items: T[], size: number) {
   const chunks: T[][] = [];
   for (let index = 0; index < items.length; index += size)
@@ -25,9 +77,9 @@ async function main() {
 
   const season = await prisma.season.upsert({
     where: { slug: "scale-season" },
-    update: { status: "active" },
+    update: { name: "Season 7: Memeverse Rising", status: "active" },
     create: {
-      name: "Scale Season",
+      name: "Season 7: Memeverse Rising",
       slug: "scale-season",
       status: "active",
       startsAt: new Date(),
@@ -38,7 +90,7 @@ async function main() {
   await prisma.narrativeMeta.createMany({
     data: Array.from({ length: TARGETS.narratives }, (_, index) => ({
       seasonId: season.id,
-      name: `Scale Narrative ${index + 1}`,
+      name: narrativeThemes[index % narrativeThemes.length].name,
       slug: `scale-narrative-${index + 1}`,
       heat: 45 + (index % 35),
       saturation: index % 40,
@@ -53,8 +105,8 @@ async function main() {
     Array.from({ length: TARGETS.users }, (_, index) => ({
       id: `scale-user-${index + 1}`,
       email: `scale-user-${index + 1}@example.com`,
-      username: `scale_user_${index + 1}`,
-      name: `Scale User ${index + 1}`,
+      username: `${founderHandles[index % founderHandles.length]}_${index + 1}`,
+      name: `${founderHandles[index % founderHandles.length]} ${index + 1}`,
       passwordHash
     })),
     500
@@ -65,7 +117,7 @@ async function main() {
   await prisma.founderProfile.createMany({
     data: Array.from({ length: TARGETS.users }, (_, index) => ({
       userId: `scale-user-${index + 1}`,
-      displayName: `Scale Founder ${index + 1}`
+      displayName: `${founderHandles[index % founderHandles.length]} ${index + 1}`
     })),
     skipDuplicates: true
   });
@@ -73,7 +125,7 @@ async function main() {
   await prisma.crew.createMany({
     data: Array.from({ length: TARGETS.crews }, (_, index) => ({
       id: `scale-crew-${index + 1}`,
-      name: `Scale Crew ${index + 1}`,
+      name: `${crewThemes[index % crewThemes.length]} Orbit ${index + 1}`,
       slug: `scale-crew-${index + 1}`,
       seasonId: season.id,
       score: index * 10
@@ -87,9 +139,9 @@ async function main() {
       userId: `scale-user-${(index % TARGETS.users) + 1}`,
       seasonId: season.id,
       crewId: `scale-crew-${(index % TARGETS.crews) + 1}`,
-      name: `Scale Token ${index + 1}`,
-      ticker: `SC${index + 1}`,
-      narrative: `Scale Narrative ${(index % TARGETS.narratives) + 1}`,
+      name: `${tokenThemes[index % tokenThemes.length][0]} ${index + 1}`,
+      ticker: `${tokenThemes[index % tokenThemes.length][1]}${index + 1}`,
+      narrative: narrativeThemes[index % narrativeThemes.length].name,
       narrativeSlug: `scale-narrative-${(index % TARGETS.narratives) + 1}`,
       status:
         index % 20 === 0 ? "graduated" : index % 13 === 0 ? "dead" : "live",

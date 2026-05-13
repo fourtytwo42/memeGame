@@ -4,13 +4,57 @@ import { prisma } from "../packages/db/src/index";
 const TARGET_CREWS = Number(process.env.CREW_SCALE_CREWS ?? 25);
 const MEMBERS_PER_CREW = Number(process.env.CREW_SCALE_MEMBERS ?? 4);
 
+const narrativeThemes = [
+  "Frog Meta",
+  "Dog Season",
+  "AI Agents",
+  "Wizard Cartel",
+  "Snack Finance",
+  "Retro Internet",
+  "Cozy Chaos",
+  "Space Pets"
+];
+
+const crewThemes = [
+  "Frog Foundry",
+  "Purple Forge",
+  "Meme Lordz",
+  "Pixel Pioneers",
+  "Chaos Crew",
+  "Degen Signal",
+  "Lore Keepers",
+  "Raid Garden",
+  "Snack Syndicate",
+  "Retro Guild"
+];
+
+const tokenThemes = [
+  ["Punkinu", "PUNK"],
+  ["Moon Pup", "PUP"],
+  ["MemeFrog", "MFROG"],
+  ["Agent Meow", "MEOW"],
+  ["Wizard Pepe", "WIZ"],
+  ["Noodle Nation", "NOODLE"],
+  ["Retro Goblin", "GOBLIN"],
+  ["Based Bot", "BASED"]
+] as const;
+
+const memberHandles = [
+  "ForgeMaster",
+  "MemeSmith",
+  "LoreKeeper",
+  "RaidRider",
+  "SignalMage",
+  "PixelScout"
+];
+
 async function main() {
   const passwordHash = await hash("MemeFoundry!123", 10);
   const season = await prisma.season.upsert({
     where: { slug: "scale-season" },
-    update: { status: "active" },
+    update: { name: "Season 7: Memeverse Rising", status: "active" },
     create: {
-      name: "Scale Season",
+      name: "Season 7: Memeverse Rising",
       slug: "scale-season",
       status: "active",
       startsAt: new Date(Date.now() - 60_000),
@@ -20,7 +64,7 @@ async function main() {
   await prisma.narrativeMeta.createMany({
     data: Array.from({ length: 8 }, (_, index) => ({
       seasonId: season.id,
-      name: `Crew Scale Narrative ${index + 1}`,
+      name: narrativeThemes[index % narrativeThemes.length],
       slug: `crew-scale-narrative-${index + 1}`,
       heat: 50 + index,
       saturation: index * 3,
@@ -36,29 +80,37 @@ async function main() {
       update: {
         passwordHash,
         status: "active",
-        username: `stage11_crew_owner_${index}`
+        username: `crew_captain_${index}`
       },
       create: {
         id: ownerId,
         email: `stage11-crew-owner-${index}@example.com`,
         passwordHash,
         status: "active",
-        username: `stage11_crew_owner_${index}`
+        username: `crew_captain_${index}`
       }
     });
     await prisma.founderProfile.upsert({
       where: { userId: ownerId },
-      update: {},
+      update: {
+        displayName: `${memberHandles[0]} ${index}`
+      },
       create: {
         userId: ownerId,
-        displayName: `Stage 11 Crew Owner ${index}`
+        displayName: `${memberHandles[0]} ${index}`
       }
     });
 
     const tokenId = `stage11-featured-token-${index}`;
+    const tokenTheme = tokenThemes[(index - 1) % tokenThemes.length];
     await prisma.launchToken.upsert({
       where: { id: tokenId },
       update: {
+        name: `${tokenTheme[0]} ${index}`,
+        ticker: `${tokenTheme[1]}${index}`,
+        description: "Featured fictional launch for coordinated crew support.",
+        narrative: narrativeThemes[(index - 1) % narrativeThemes.length],
+        narrativeSlug: `crew-scale-narrative-${((index - 1) % 8) + 1}`,
         status: "live",
         simulatedHolders: 100 + index,
         simulatedMarketCap: 10_000 + index * 500,
@@ -68,11 +120,11 @@ async function main() {
         id: tokenId,
         userId: ownerId,
         seasonId: season.id,
-        name: `Stage 11 Featured Token ${index}`,
-        ticker: `S11${index}`,
-        description: "Production-like crew scale fixture launch.",
-        narrative: "Crew Scale",
-        narrativeSlug: "crew-scale",
+        name: `${tokenTheme[0]} ${index}`,
+        ticker: `${tokenTheme[1]}${index}`,
+        description: "Featured fictional launch for coordinated crew support.",
+        narrative: narrativeThemes[(index - 1) % narrativeThemes.length],
+        narrativeSlug: `crew-scale-narrative-${((index - 1) % 8) + 1}`,
         status: "live",
         simulatedHolders: 100 + index,
         simulatedMarketCap: 10_000 + index * 500,
@@ -86,23 +138,28 @@ async function main() {
     });
 
     const crewId = `stage11-scale-crew-${index}`;
+    const crewName = `${crewThemes[(index - 1) % crewThemes.length]} Prime ${index}`;
     await prisma.crew.upsert({
       where: { id: crewId },
       update: {
         energy: 100,
         featuredTokenId: tokenId,
         moderationStatus: "active",
+        name: crewName,
+        description:
+          "Coordinated launch crew with active members and a featured support target.",
+        tagline: "Built for clean raids, lore drops, and support bursts.",
         resources: 100,
         score: 500 + index * 12,
         seasonId: season.id
       },
       create: {
         id: crewId,
-        name: `Stage 11 Scale Crew ${index}`,
+        name: crewName,
         slug: `stage11-scale-crew-${index}`,
         description:
-          "Scale fixture crew with active members and a featured launch.",
-        tagline: "Fixture crew for production-like pages.",
+          "Coordinated launch crew with active members and a featured support target.",
+        tagline: "Built for clean raids, lore drops, and support bursts.",
         energy: 100,
         resources: 100,
         featuredTokenId: tokenId,
@@ -118,19 +175,20 @@ async function main() {
       memberIndex += 1
     ) {
       const userId = `stage11-crew-${index}-member-${memberIndex}`;
+      const username = `${memberHandles[(memberIndex - 1) % memberHandles.length].toLowerCase()}_${index}_${memberIndex}`;
       await prisma.user.upsert({
         where: { id: userId },
         update: {
           passwordHash,
           status: "active",
-          username: `stage11_crew_${index}_member_${memberIndex}`
+          username
         },
         create: {
           id: userId,
           email: `stage11-crew-${index}-member-${memberIndex}@example.com`,
           passwordHash,
           status: "active",
-          username: `stage11_crew_${index}_member_${memberIndex}`
+          username
         }
       });
       await prisma.crewMember.upsert({
