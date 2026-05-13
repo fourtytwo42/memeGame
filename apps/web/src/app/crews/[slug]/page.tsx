@@ -1,7 +1,16 @@
 import type { Route } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Badge, Button, Panel, StatBar } from "@meme-foundry/ui";
+import {
+  Badge,
+  Button,
+  Kicker,
+  MetricChip,
+  NeonPanel,
+  Panel,
+  StatBar
+} from "@meme-foundry/ui";
 import { auth } from "@/auth";
 import { AppShell } from "@/components/shell/app-shell";
 import {
@@ -136,9 +145,18 @@ export default async function CrewDetailPage({
           </Panel>
         ) : null}
 
-        <Panel className="border-cyan-300/25 bg-[linear-gradient(145deg,rgba(34,211,238,0.13),rgba(15,23,42,0.94))]">
-          <div className="grid gap-5 xl:grid-cols-[1fr_20rem] xl:items-center">
+        <NeonPanel tone="cyan">
+          <div className="grid gap-5 xl:grid-cols-[8rem_minmax(0,1fr)_20rem] xl:items-center">
+            <Image
+              alt={`${crew.name} crew avatar`}
+              className="mx-auto size-32 rounded-lg border border-cyan-300/25 bg-slate-950/55 object-contain p-3"
+              height={128}
+              priority
+              src={crew.avatarUrl ?? "/assets/game/crews/default-avatar.png"}
+              width={128}
+            />
             <div>
+              <Kicker className="text-cyan-100">Crew command room</Kicker>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
                   tone={crew.moderationStatus === "active" ? "good" : "warn"}
@@ -174,7 +192,7 @@ export default async function CrewDetailPage({
               </div>
             </div>
           </div>
-        </Panel>
+        </NeonPanel>
 
         <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
           <Panel data-testid="featured-launch-panel">
@@ -191,9 +209,20 @@ export default async function CrewDetailPage({
             </div>
             {crew.featuredToken ? (
               <Link
-                className="grid gap-3 rounded-lg border border-lime-300/25 bg-lime-300/10 p-4 hover:bg-lime-300/15 sm:grid-cols-[1fr_10rem] sm:items-center"
+                className="grid gap-3 rounded-lg border border-lime-300/25 bg-lime-300/10 p-4 hover:bg-lime-300/15 sm:grid-cols-[5rem_minmax(0,1fr)_10rem] sm:items-center"
                 href={`/token/${crew.featuredToken.id}` as Route}
               >
+                <Image
+                  alt={`${crew.featuredToken.name} token art`}
+                  className="size-20 rounded-md border border-white/10 bg-slate-950/70 object-contain p-1"
+                  height={80}
+                  src={
+                    crew.featuredToken.cardImageUrl ??
+                    crew.featuredToken.placeholderImageUrl ??
+                    "/assets/game/tokens/default-token-mascot.png"
+                  }
+                  width={80}
+                />
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-2xl font-black text-white">
@@ -411,6 +440,28 @@ export default async function CrewDetailPage({
           </Panel>
 
           <div className="grid gap-4">
+            <Panel data-testid="crew-badges-panel">
+              <h2 className="mb-4 flex items-center gap-2 font-black text-white">
+                <Trophy className="text-amber-300" size={18} /> Badges
+              </h2>
+              <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                <MetricChip label="Rank" tone="warn" value={`#${rank}`} />
+                <MetricChip
+                  label="Actions"
+                  tone="good"
+                  value={crew._count.actions.toLocaleString()}
+                />
+                <MetricChip
+                  label="Members"
+                  tone="neutral"
+                  value={crew._count.members.toLocaleString()}
+                />
+              </div>
+              <p className="mt-3 text-sm leading-6 text-slate-400">
+                Crews earn visible status through featured-launch support,
+                member coordination, and sustained score growth.
+              </p>
+            </Panel>
             <Panel data-testid="crew-event-feed">
               <h2 className="mb-4 flex items-center gap-2 font-black text-white">
                 <Radio className="text-lime-300" size={18} /> Event feed
