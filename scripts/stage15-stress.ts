@@ -29,8 +29,11 @@ async function main() {
     Array.from({ length: launchClients }, async (_, index) => {
       const ordinal = index + 1;
       const user = await prisma.user.upsert({
-        where: { username: `stage15_stress_founder_${ordinal}` },
-        update: { status: "active" },
+        where: { email: `stage15-stress-founder-${ordinal}@example.com` },
+        update: {
+          status: "active",
+          username: `stage15_stress_founder_${ordinal}`
+        },
         create: {
           email: `stage15-stress-founder-${ordinal}@example.com`,
           username: `stage15_stress_founder_${ordinal}`,
@@ -87,8 +90,12 @@ async function main() {
   const supportUsers = await Promise.all(
     Array.from({ length: supportClients }, (_, index) =>
       prisma.user.upsert({
-        where: { username: `stage15_stress_supporter_${index + 1}` },
-        update: { status: "active", supportEnergy: 100 },
+        where: { email: `stage15-stress-supporter-${index + 1}@example.com` },
+        update: {
+          status: "active",
+          supportEnergy: 100,
+          username: `stage15_stress_supporter_${index + 1}`
+        },
         create: {
           email: `stage15-stress-supporter-${index + 1}@example.com`,
           username: `stage15_stress_supporter_${index + 1}`,
