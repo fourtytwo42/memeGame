@@ -114,11 +114,27 @@ export default async function LeaderboardPage({
     <AppShell>
       <div className="grid gap-4" data-testid="leaderboard-page">
         <NeonPanel tone="amber">
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-center">
+          <div className="grid gap-5 lg:grid-cols-[14rem_minmax(0,1fr)_18rem] lg:items-center">
+            <div className="overflow-hidden rounded-lg border border-amber-300/25 bg-slate-950/70 p-3 shadow-[0_0_34px_rgba(251,191,36,0.14)]">
+              <Image
+                alt={`${season?.name ?? "Active season"} leaderboard art`}
+                className="mx-auto aspect-[4/3] w-full object-contain"
+                height={168}
+                priority
+                src="/assets/game/share/foundry-workshop.png"
+                width={224}
+              />
+              <div className="mt-2 flex flex-wrap justify-center gap-2">
+                <Badge tone="warn">
+                  {tabs.find(([id]) => id === category)?.[1]}
+                </Badge>
+                <Badge tone="neutral">{rows.length} ranked</Badge>
+              </div>
+            </div>
             <div>
               <Kicker className="text-amber-200">Season scoped</Kicker>
-              <h1 className="mt-3 text-3xl font-black text-white sm:text-4xl">
-                Leaderboard
+              <h1 className="mt-3 text-4xl font-black text-white sm:text-5xl">
+                Season leaderboard
               </h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
                 Rankings come from stored launch state and refreshed score
@@ -200,6 +216,11 @@ export default async function LeaderboardPage({
                       {snapshot.rank && snapshot.rank <= 3 ? (
                         <Medal className="text-amber-300 sm:mt-2" size={20} />
                       ) : null}
+                      <span className="mt-2 inline-flex rounded-full border border-lime-300/20 bg-lime-300/10 px-2 py-1 text-xs font-black text-lime-100">
+                        {snapshot.rank && snapshot.rank <= 10
+                          ? "Rising"
+                          : "Holding"}
+                      </span>
                     </div>
                     <div className="grid min-w-0 grid-cols-[4rem_minmax(0,1fr)] items-center gap-3">
                       <Image
@@ -296,7 +317,11 @@ export default async function LeaderboardPage({
                         <p className="font-black text-white">
                           #{snapshot.rank} {token.ticker}
                         </p>
-                        <Badge tone="warn">live</Badge>
+                        <Badge tone="warn">
+                          {snapshot.rank && snapshot.rank <= 10
+                            ? "rising"
+                            : "live"}
+                        </Badge>
                       </div>
                       <p className="mt-1 text-sm text-slate-400">
                         {formatValue(category, snapshot.score)}
