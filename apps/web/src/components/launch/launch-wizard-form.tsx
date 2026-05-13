@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useActionState, useMemo, useState } from "react";
 import { createLaunch } from "@/app/launch/new/actions";
-import { narrativeImage } from "@/lib/assets";
+import { narrativeImage, tokenVariantImage } from "@/lib/assets";
 import {
   Badge,
   Button,
@@ -126,7 +126,7 @@ export function LaunchWizardForm({
   return (
     <form
       action={action}
-      className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_23rem]"
+      className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_25rem]"
       data-testid="launch-wizard-form"
       noValidate
     >
@@ -150,9 +150,9 @@ export function LaunchWizardForm({
             {steps.map((step, index) => (
               <button
                 aria-current={activeStep === index ? "step" : undefined}
-                className={`rounded-md border p-2 text-center transition ${
+                className={`grid min-h-16 min-w-0 content-center rounded-md border p-1.5 text-center transition sm:min-h-20 sm:p-2 ${
                   activeStep === index
-                    ? "border-cyan-200 bg-cyan-300/15 text-cyan-50"
+                    ? "border-cyan-200 bg-cyan-300/20 text-cyan-50 shadow-[0_0_22px_rgba(34,211,238,0.14)]"
                     : index < activeStep
                       ? "border-lime-300/30 bg-lime-300/10 text-lime-100"
                       : "border-white/10 bg-slate-950/55 text-slate-300 hover:bg-white/10"
@@ -164,8 +164,11 @@ export function LaunchWizardForm({
                 <span className="mx-auto grid size-7 place-items-center rounded-full border border-current text-xs font-black">
                   {index + 1}
                 </span>
-                <span className="mt-1 hidden text-xs font-black sm:block">
+                <span className="mt-1 break-words text-[0.66rem] font-black leading-3 sm:text-xs sm:leading-4">
                   {step.label}
+                </span>
+                <span className="mt-0.5 hidden text-[0.68rem] font-bold uppercase text-slate-400 sm:block">
+                  {step.eyebrow}
                 </span>
                 <span className="sr-only">{stepStatus(index, activeStep)}</span>
               </button>
@@ -239,10 +242,10 @@ export function LaunchWizardForm({
               attention, saturation means competition, and fatigue means the
               crowd may be tired of it.
             </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="mt-4 grid gap-3 xl:grid-cols-2">
               {narratives.map((narrative) => (
                 <label
-                  className="grid cursor-pointer gap-3 overflow-hidden rounded-md border border-white/10 bg-slate-950/50 p-3 has-[:checked]:border-lime-300 has-[:checked]:bg-lime-300/10"
+                  className="grid cursor-pointer gap-3 overflow-hidden rounded-md border border-white/10 bg-slate-950/50 p-3 transition hover:border-lime-300/40 has-[:checked]:border-lime-300 has-[:checked]:bg-lime-300/10 has-[:checked]:shadow-[0_0_24px_rgba(190,242,100,0.14)]"
                   key={narrative.slug}
                 >
                   <input
@@ -253,13 +256,13 @@ export function LaunchWizardForm({
                     type="radio"
                     value={narrative.slug}
                   />
-                  <div className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-3">
+                  <div className="grid gap-3 sm:grid-cols-[7rem_minmax(0,1fr)]">
                     <Image
                       alt={`${narrative.name} narrative art`}
-                      className="size-18 rounded-md border border-white/10 bg-slate-950/70 object-contain p-1"
-                      height={72}
+                      className="aspect-square w-full rounded-md border border-white/10 bg-slate-950/70 object-contain p-2"
+                      height={112}
                       src={narrativeImage(narrative.name ?? narrative.slug)}
-                      width={72}
+                      width={112}
                     />
                     <div className="min-w-0">
                       <span className="break-words font-black text-white">
@@ -267,6 +270,9 @@ export function LaunchWizardForm({
                       </span>
                       <span className="mt-1 block text-sm font-bold text-lime-200">
                         {opportunityLabel(narrative)}
+                      </span>
+                      <span className="mt-2 inline-flex rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 text-xs font-black text-slate-300">
+                        Heat {narrative.heat} / Crowd {narrative.saturation}
                       </span>
                     </div>
                   </div>
@@ -507,14 +513,20 @@ function PreviewCard({
 }) {
   return (
     <div className="mt-4 overflow-hidden rounded-lg border border-cyan-300/30 bg-slate-950/60 p-4 shadow-[0_0_26px_rgba(34,211,238,0.14)]">
-      <Image
-        alt="Transparent default token placeholder"
-        className="mx-auto size-40"
-        height={160}
-        priority
-        src="/assets/game/tokens/default-token-mascot.png"
-        width={160}
-      />
+      <div className="relative rounded-lg border border-cyan-300/20 bg-[radial-gradient(circle_at_50%_35%,rgba(34,211,238,0.22),rgba(15,23,42,0.72)_55%,rgba(2,6,23,0.95))] p-4">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <Badge tone="good">Fallback ready</Badge>
+          <Badge tone="warn">Image queued</Badge>
+        </div>
+        <Image
+          alt={`${name || "Token"} preview art`}
+          className="mx-auto size-44 object-contain drop-shadow-[0_0_24px_rgba(34,211,238,0.24)]"
+          height={176}
+          priority
+          src={tokenVariantImage(narrative?.name)}
+          width={176}
+        />
+      </div>
       <h2 className="mt-4 break-words text-2xl font-black text-white">
         {name || "Token name"}
       </h2>
@@ -529,7 +541,7 @@ function PreviewCard({
       </p>
       <div className="mt-3 rounded-md border border-lime-300/20 bg-lime-300/10 p-3">
         <p className="text-sm font-black text-lime-100">
-          Image queued after launch
+          Local image job queued after launch
         </p>
         <p className="mt-1 text-xs leading-5 text-slate-300">
           The launch starts with polished fallback art. Final local art can
