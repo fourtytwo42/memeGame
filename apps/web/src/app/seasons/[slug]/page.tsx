@@ -62,20 +62,26 @@ export default async function SeasonDetailPage({ params }: SeasonDetailProps) {
     <AppShell>
       <div className="grid gap-4" data-testid="season-detail-page">
         <NeonPanel tone="pink">
-          <div className="grid gap-5 lg:grid-cols-[10rem_minmax(0,1fr)_22rem] lg:items-center">
-            <Image
-              alt={`${season.name} season banner art`}
-              className="mx-auto size-36 object-contain"
-              height={144}
-              priority
-              src="/assets/game/share/foundry-workshop.png"
-              width={144}
-            />
+          <div className="grid gap-5 lg:grid-cols-[18rem_minmax(0,1fr)_22rem] lg:items-center">
+            <div className="relative overflow-hidden rounded-lg border border-pink-300/25 bg-slate-950/70 p-4 shadow-[0_0_36px_rgba(244,114,182,0.16)]">
+              <Image
+                alt={`${season.name} season banner art`}
+                className="mx-auto aspect-[16/10] w-full object-contain"
+                height={180}
+                priority
+                src="/assets/game/share/foundry-workshop.png"
+                width={288}
+              />
+              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                <Badge tone={season.status === "active" ? "good" : "neutral"}>
+                  {season.status}
+                </Badge>
+                <Badge tone="warn">{daysLeft(season.endsAt)}d left</Badge>
+                <Badge tone="neutral">{liveLaunches} live</Badge>
+              </div>
+            </div>
             <div>
               <Kicker>Season narrative map</Kicker>
-              <Badge tone={season.status === "active" ? "good" : "neutral"}>
-                {season.status} season
-              </Badge>
               <h1 className="mt-3 text-3xl font-black text-white sm:text-5xl">
                 {season.name}
               </h1>
@@ -85,7 +91,7 @@ export default async function SeasonDetailPage({ params }: SeasonDetailProps) {
                 Scores are simulated game state, not real markets.
               </p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="grid gap-3">
               <MetricChip
                 label="Time left"
                 tone="good"
@@ -101,6 +107,24 @@ export default async function SeasonDetailPage({ params }: SeasonDetailProps) {
                 tone="warn"
                 value={season.narratives.length}
               />
+              <div className="rounded-md border border-pink-300/20 bg-pink-300/10 p-3">
+                <p className="text-xs font-black uppercase text-pink-100">
+                  AI commentary
+                </p>
+                <p className="mt-2 text-sm font-bold leading-5 text-slate-200">
+                  Scan for high heat with lower fatigue, then support launches
+                  that explain the joke clearly.
+                </p>
+              </div>
+              <div className="rounded-md border border-lime-300/20 bg-lime-300/10 p-3">
+                <p className="text-xs font-black uppercase text-lime-100">
+                  Daily challenge
+                </p>
+                <p className="mt-2 text-sm font-bold leading-5 text-slate-200">
+                  Protect a hot narrative from fatigue with lore, trust, or crew
+                  support.
+                </p>
+              </div>
             </div>
           </div>
         </NeonPanel>
@@ -123,16 +147,16 @@ export default async function SeasonDetailPage({ params }: SeasonDetailProps) {
                 const label = narrativeOpportunity(narrative);
                 return (
                   <article
-                    className="rounded-lg border border-white/10 bg-slate-950/55 p-4"
+                    className="rounded-lg border border-white/10 bg-slate-950/55 p-4 shadow-[0_0_24px_rgba(244,114,182,0.08)]"
                     key={narrative.id}
                   >
-                    <div className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-3">
+                    <div className="grid gap-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
                       <Image
                         alt={`${narrative.name} narrative art`}
-                        className="size-18 rounded-md border border-white/10 bg-slate-950/70 object-contain p-1"
-                        height={72}
+                        className="aspect-square w-full rounded-md border border-white/10 bg-slate-950/70 object-contain p-2"
+                        height={128}
                         src={narrativeImage(narrative.name ?? narrative.slug)}
-                        width={72}
+                        width={128}
                       />
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
@@ -144,6 +168,15 @@ export default async function SeasonDetailPage({ params }: SeasonDetailProps) {
                         <p className="mt-1 text-sm leading-5 text-slate-400">
                           {narrative.activeLaunches} active launches · meme
                           potential {narrative.memePotential}
+                        </p>
+                        <p className="mt-3 rounded-md border border-white/10 bg-white/[0.04] p-2 text-xs font-bold leading-5 text-slate-300">
+                          {label === "Good opportunity"
+                            ? "Good first pick: attention is available without obvious exhaustion."
+                            : label === "Crowded"
+                              ? "Crowded lane: pick a sharper mascot or trust posture."
+                              : label === "Cooling off"
+                                ? "Cooling lane: use lore or crew support to make it fresh."
+                                : "Playable lane: steady enough for a clear, low-risk launch."}
                         </p>
                       </div>
                     </div>
