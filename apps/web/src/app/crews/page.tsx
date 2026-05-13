@@ -13,7 +13,7 @@ import {
 import { auth } from "@/auth";
 import { AppShell } from "@/components/shell/app-shell";
 import { prisma } from "@meme-foundry/db";
-import { Radio, Shield, Trophy, Users } from "lucide-react";
+import { Radio, Shield, Trophy } from "lucide-react";
 import { createCrewAction } from "./actions";
 
 export const dynamic = "force-dynamic";
