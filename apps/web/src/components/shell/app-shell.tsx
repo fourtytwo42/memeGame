@@ -1,8 +1,10 @@
 import type { Route } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { IconHelpButton } from "@/components/shell/icon-help";
 import { signOutAction } from "@/app/signin/actions";
+import { formatCompactCurrency } from "@/lib/game-state";
 import { prisma } from "@meme-foundry/db";
 import {
   Bell,
@@ -28,9 +30,14 @@ const primaryNav: NavItem[] = [
   { href: "/profile", label: "Profile", icon: CircleHelp }
 ];
 
+function daysLeft(endsAt?: Date) {
+  if (!endsAt) return "--";
+  return `${Math.max(0, Math.ceil((endsAt.getTime() - Date.now()) / 86400000))}d left`;
+}
+
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const session = await auth();
-  const [season, activeToken] = await Promise.all([
+  const [season, activeToken, profile] = await Promise.all([
     prisma.season.findFirst({
       where: { status: "active" },
       orderBy: { startsAt: "desc" }
@@ -40,6 +47,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           where: { userId: session.user.id, status: { in: ["live", "draft"] } },
           orderBy: { updatedAt: "desc" }
         })
+      : null,
+    session?.user
+      ? prisma.founderProfile.findUnique({ where: { userId: session.user.id } })
       : null
   ]);
   const nav: NavItem[] =
@@ -48,21 +58,32 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       : primaryNav;
 
   return (
-    <main className="grid h-screen grid-cols-[4.5rem_minmax(0,1fr)] overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(132,204,22,0.16),transparent_30rem),#07090d] text-slate-100 sm:grid-cols-[14rem_minmax(0,1fr)]">
+    <main className="grid h-screen grid-cols-[4.5rem_minmax(0,1fr)] overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(132,204,22,0.18),transparent_28rem),radial-gradient(circle_at_top_right,rgba(236,72,153,0.12),transparent_34rem),#07090d] text-slate-100 sm:grid-cols-[14rem_minmax(0,1fr)]">
       <aside
-        className="fixed inset-y-0 left-0 z-50 flex w-[4.5rem] flex-col border-r border-white/10 bg-slate-950/92 px-2 py-3 backdrop-blur sm:w-56 sm:px-4 sm:py-4"
+        className="fixed inset-y-0 left-0 z-50 flex w-[4.5rem] flex-col border-r border-lime-300/15 bg-slate-950/94 px-2 py-3 shadow-2xl shadow-black/50 backdrop-blur sm:w-56 sm:px-4 sm:py-4"
         data-testid="desktop-left-nav"
       >
         <Link
           aria-label="Meme Foundry home"
-          className="grid place-items-center gap-1 px-1 sm:block sm:px-2"
+          className="grid place-items-center gap-1 px-1 sm:grid-cols-[2.6rem_minmax(0,1fr)] sm:px-2"
           href="/play"
         >
-          <span className="text-xl font-black italic tracking-wide text-white sm:text-3xl">
-            MEME
-          </span>
-          <span className="-mt-1 hidden text-2xl font-black italic text-pink-400 sm:block">
-            FOUNDRY
+          <Image
+            alt=""
+            aria-hidden="true"
+            className="size-10 object-contain"
+            height={40}
+            priority
+            src="/assets/brand/foundry-mark.png"
+            width={40}
+          />
+          <span className="hidden sm:block">
+            <span className="block text-3xl font-black italic leading-7 tracking-wide text-white">
+              MEME
+            </span>
+            <span className="-mt-1 block text-2xl font-black italic leading-6 text-pink-400">
+              FOUNDRY
+            </span>
           </span>
         </Link>
         <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.04] p-2 sm:mt-5 sm:p-3">
@@ -87,6 +108,14 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
               </span>
             </Link>
           ) : null}
+          <div className="mt-3 hidden grid-cols-2 gap-2 text-xs font-black sm:grid">
+            <div className="rounded-md bg-slate-950/70 p-2 text-lime-200">
+              {daysLeft(season?.endsAt)}
+            </div>
+            <div className="rounded-md bg-slate-950/70 p-2 text-pink-200">
+              live
+            </div>
+          </div>
         </div>
         <nav aria-label="Primary" className="mt-5 grid gap-2">
           {nav.map((item) => (
@@ -105,6 +134,26 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
           ))}
         </nav>
+        {session?.user ? (
+          <div className="mt-4 hidden grid-cols-2 gap-2 sm:grid">
+            <div className="rounded-md border border-cyan-300/15 bg-cyan-300/10 p-2">
+              <p className="text-[0.65rem] font-black uppercase text-cyan-200">
+                Energy
+              </p>
+              <p className="text-sm font-black text-white">
+                {activeToken?.energy ?? "--"}
+              </p>
+            </div>
+            <div className="rounded-md border border-amber-300/15 bg-amber-300/10 p-2">
+              <p className="text-[0.65rem] font-black uppercase text-amber-200">
+                Clout
+              </p>
+              <p className="text-sm font-black text-white">
+                {profile?.clout ?? 0}
+              </p>
+            </div>
+          </div>
+        ) : null}
         <div className="mt-auto grid gap-3 pb-16 sm:pb-0">
           <IconHelpButton
             help="Notifications will show urgent launch events, crew support, and system health changes."
@@ -139,6 +188,45 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         data-testid="app-scroll-content"
       >
         <div className="mx-auto max-w-[94rem] px-3 py-3 sm:px-6 sm:py-4 lg:px-6 xl:px-8">
+          {session?.user ? (
+            <div
+              className="mb-4 grid gap-2 rounded-lg border border-white/10 bg-slate-950/55 p-3 shadow-xl shadow-black/20 sm:grid-cols-4"
+              data-testid="shell-resource-strip"
+            >
+              <div>
+                <p className="text-xs font-black uppercase text-slate-400">
+                  Founder
+                </p>
+                <p className="truncate font-black text-white">
+                  {session.user.username}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-black uppercase text-slate-400">
+                  Energy
+                </p>
+                <p className="font-black text-lime-200">
+                  {activeToken?.energy ?? "--"} / 100
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-black uppercase text-slate-400">
+                  Fake budget
+                </p>
+                <p className="font-black text-amber-200">
+                  {activeToken
+                    ? formatCompactCurrency(activeToken.treasury)
+                    : "$0"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-black uppercase text-slate-400">
+                  Safety
+                </p>
+                <p className="font-black text-cyan-200">No real trading</p>
+              </div>
+            </div>
+          ) : null}
           {children}
         </div>
       </div>
