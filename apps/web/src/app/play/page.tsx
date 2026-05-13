@@ -43,7 +43,10 @@ export default async function PlayPage({ searchParams }: PlayProps) {
       prisma.founderProfile.findUnique({ where: { userId: session.user.id } }),
       prisma.launchToken.findFirst({
         where: { userId: session.user.id },
-        orderBy: { updatedAt: "desc" }
+        orderBy: { updatedAt: "desc" },
+        include: {
+          ticks: { orderBy: { createdAt: "desc" }, take: 10 }
+        }
       }),
       prisma.gameEvent.findMany({ orderBy: { createdAt: "desc" }, take: 4 }),
       prisma.narrativeMeta.findMany({ orderBy: { heat: "desc" }, take: 4 }),
@@ -77,6 +80,11 @@ export default async function PlayPage({ searchParams }: PlayProps) {
       ? "Manage active launch"
       : "Create your first token";
   const progress = token ? graduationProgress(token) : 0;
+  const sparkline = token ? [...token.ticks].reverse() : [];
+  const sparkMax = Math.max(
+    1,
+    ...sparkline.map((tick) => Math.round(tick.marketCap))
+  );
 
   return (
     <AppShell>
@@ -138,6 +146,28 @@ export default async function PlayPage({ searchParams }: PlayProps) {
                   label="Market cap"
                   value={formatCompactCurrency(token.simulatedMarketCap)}
                 />
+              </div>
+            ) : null}
+            {sparkline.length ? (
+              <div className="mt-5 rounded-md border border-lime-300/15 bg-slate-950/45 p-3">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <p className="text-xs font-black uppercase text-slate-400">
+                    Market pulse
+                  </p>
+                  <p className="text-xs font-black text-lime-200">live sim</p>
+                </div>
+                <div className="flex h-16 items-end gap-1">
+                  {sparkline.map((tick) => (
+                    <div
+                      className="min-w-0 flex-1 rounded-t bg-lime-300/80 shadow-[0_0_14px_rgba(190,242,100,0.22)]"
+                      key={tick.id}
+                      style={{
+                        height: `${Math.max(14, Math.round((tick.marketCap / sparkMax) * 100))}%`
+                      }}
+                      title={formatCompactCurrency(tick.marketCap)}
+                    />
+                  ))}
+                </div>
               </div>
             ) : null}
             {token ? (
@@ -348,12 +378,28 @@ export default async function PlayPage({ searchParams }: PlayProps) {
                 </div>
               </div>
             ) : (
-              <div className="rounded-md border border-dashed border-white/15 bg-slate-950/45 p-4">
-                <p className="font-black text-white">No crew yet</p>
-                <p className="mt-2 text-sm leading-6 text-slate-400">
-                  Crews unlock support actions later. For now, focus on making
-                  the active launch readable and resilient.
-                </p>
+              <div className="grid gap-3 rounded-md border border-dashed border-cyan-300/20 bg-cyan-300/5 p-4 sm:grid-cols-[5rem_minmax(0,1fr)]">
+                <Image
+                  alt=""
+                  aria-hidden="true"
+                  className="size-20 rounded-md border border-white/10 bg-slate-950/60 object-contain p-2"
+                  height={80}
+                  src="/assets/game/crews/default-avatar.png"
+                  width={80}
+                />
+                <div>
+                  <p className="font-black text-white">No crew yet</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-400">
+                    Crews unlock coordinated boosts, shared energy, and featured
+                    launch support. Your active launch is playable now.
+                  </p>
+                  <Link
+                    className="mt-3 inline-flex min-h-10 items-center justify-center rounded-md bg-cyan-300 px-3 py-2 text-sm font-black text-slate-950 hover:bg-cyan-200"
+                    href="/crews"
+                  >
+                    Find a crew
+                  </Link>
+                </div>
               </div>
             )}
           </Panel>
