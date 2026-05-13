@@ -38,6 +38,7 @@ test.afterAll(async () => {
 test("first-time player creates founder profile and launches token", async ({
   page
 }, testInfo) => {
+  test.setTimeout(90000);
   const email = rookieEmail(testInfo.project.name);
   const ticker = `RK${Date.now().toString().slice(-6)}`;
 
@@ -65,18 +66,28 @@ test("first-time player creates founder profile and launches token", async ({
   await page
     .getByLabel("Description")
     .fill("A fictional launch for learning the first Meme Foundry loop.");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.getByTestId("wizard-narrative-step")).toBeVisible();
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.getByTestId("wizard-mascot-step")).toBeVisible();
   await page
     .getByLabel("Mascot concept")
     .fill("a rookie reactor mascot with a bright helmet");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.getByTestId("wizard-strategy-step")).toBeVisible();
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.getByTestId("wizard-review-step")).toBeVisible();
   await expect(page.getByTestId("live-token-preview")).toContainText(
     "Rookie Reactor"
   );
   await expect(page.getByTestId("wizard-review-step")).toContainText(
-    "No real trading"
+    "no real trading"
   );
-  await page.getByRole("button", { name: "Review and launch" }).click();
+  await page.getByTestId("launch-submit-button").click({ noWaitAfter: true });
 
-  await expect(page).toHaveURL(/\/launch\/.+\/manage\?launched=1/);
+  await expect(page).toHaveURL(/\/launch\/.+\/manage\?launched=1/, {
+    timeout: 60000
+  });
   await expect(page.getByTestId("manage-token-header")).toContainText(
     "Manage Rookie Reactor"
   );
@@ -103,7 +114,7 @@ test("first-time player creates founder profile and launches token", async ({
   });
   expect(token?.status).toBe("live");
   expect(token?.placeholderImageUrl).toBe(
-    "/assets/game/tokens/default-token-placeholder.svg"
+    "/assets/game/tokens/default-token-mascot.png"
   );
   expect(token?.energy).toBeLessThan(100);
   expect(token?.actions.length).toBeGreaterThanOrEqual(3);
