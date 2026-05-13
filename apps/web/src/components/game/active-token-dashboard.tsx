@@ -278,6 +278,16 @@ export function ActiveTokenDashboard({
   userId
 }: DashboardProps) {
   const flatActions = actionsByIntent.flatMap((group) => group.actions);
+  const recommendedAction =
+    flatActions.find((action) => action.id === recommendedActionId) ?? null;
+  const situationActions = [
+    recommendedAction,
+    ...flatActions.filter(
+      (action) => action.id !== recommendedActionId && !action.disabledReason
+    )
+  ]
+    .filter((action): action is DashboardAction => Boolean(action))
+    .slice(0, 3);
   const pinnedAction = pinnedEvent?.actionId
     ? flatActions.find((action) => action.id === pinnedEvent.actionId)
     : null;
@@ -372,16 +382,59 @@ export function ActiveTokenDashboard({
         </div>
       </Panel>
 
+      <section
+        className="grid gap-3 lg:grid-cols-3"
+        data-testid="active-situation-row"
+      >
+        {situationActions.map((action, index) => (
+          <div
+            className={`rounded-md border p-4 ${
+              index === 0
+                ? "border-lime-300/30 bg-lime-300/10 shadow-[0_0_22px_rgba(190,242,100,0.10)]"
+                : "border-white/10 bg-slate-950/55"
+            }`}
+            data-testid={`decision-card-${index + 1}`}
+            key={action.id}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-black uppercase text-slate-400">
+                  {index === 0 ? "Best move" : `Option ${index + 1}`}
+                </p>
+                <h2 className="mt-1 text-lg font-black text-white">
+                  {action.label}
+                </h2>
+              </div>
+              <Badge tone={index === 0 ? "good" : "neutral"}>
+                {cooldownLabel(action.cooldown)}
+              </Badge>
+            </div>
+            <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-300">
+              {action.plainPurpose}
+            </p>
+            <div className="mt-3 grid gap-2 text-xs font-bold sm:grid-cols-2">
+              <span className="rounded-md bg-emerald-300/10 p-2 text-emerald-100">
+                {action.upside}
+              </span>
+              <span className="rounded-md bg-amber-300/10 p-2 text-amber-100">
+                {action.downside}
+              </span>
+            </div>
+            <p className="mt-3 text-xs font-black uppercase text-slate-400">
+              Energy {action.energyCost} · Budget {fmtMoney(action.cost)}
+            </p>
+          </div>
+        ))}
+      </section>
+
       <div className="grid gap-4 xl:grid-cols-[1fr_24rem]">
-        <main className="grid gap-4">
+        <div className="grid gap-4">
           <NeonPanel data-testid="recommended-action-row" tone="lime">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <Kicker className="text-lime-100">Recommended move</Kicker>
                 <h2 className="mt-2 text-2xl font-black text-white">
-                  {flatActions.find(
-                    (action) => action.id === recommendedActionId
-                  )?.label ?? "Choose the next move"}
+                  {recommendedAction?.label ?? "Choose the next move"}
                 </h2>
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
                   This is the safest current move based on energy, fake budget,
@@ -391,13 +444,11 @@ export function ActiveTokenDashboard({
               </div>
               <Badge tone="good">Best next action</Badge>
             </div>
-            {flatActions.find((action) => action.id === recommendedActionId) ? (
+            {recommendedAction ? (
               <div className="mt-4">
                 <ActionCard
                   action={{
-                    ...flatActions.find(
-                      (action) => action.id === recommendedActionId
-                    )!,
+                    ...recommendedAction,
                     recommended: true
                   }}
                   nonceSeed={`${nonceSeed}-recommended`}
@@ -574,7 +625,7 @@ export function ActiveTokenDashboard({
               ))}
             </div>
           </Panel>
-        </main>
+        </div>
 
         <aside className="grid content-start gap-4">
           <RealtimeStatus
