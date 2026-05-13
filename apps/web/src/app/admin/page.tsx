@@ -76,7 +76,7 @@ export default async function AdminPage() {
   ]);
 
   return (
-    <AppShell>
+    <AppShell variant="admin">
       <div className="grid gap-4" data-testid="admin-page">
         <NeonPanel tone="violet">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-center">
@@ -270,7 +270,7 @@ export default async function AdminPage() {
           </Panel>
         </Panel>
 
-        <Panel data-testid="admin-season-editor">
+        <Panel data-testid="admin-season-editor" id="season-editor">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
@@ -317,7 +317,7 @@ export default async function AdminPage() {
           </div>
         </Panel>
 
-        <Panel data-testid="admin-narrative-editor">
+        <Panel data-testid="admin-narrative-editor" id="narrative-editor">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
@@ -371,7 +371,7 @@ export default async function AdminPage() {
           </div>
         </Panel>
 
-        <Panel data-testid="admin-reports">
+        <Panel data-testid="admin-reports" id="reports">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
@@ -430,7 +430,7 @@ export default async function AdminPage() {
           </div>
         </Panel>
 
-        <Panel data-testid="admin-ai-logs">
+        <Panel data-testid="admin-ai-logs" id="ai-logs">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
@@ -481,7 +481,7 @@ export default async function AdminPage() {
           </div>
         </Panel>
 
-        <Panel data-testid="admin-image-jobs">
+        <Panel data-testid="admin-image-jobs" id="image-jobs">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">

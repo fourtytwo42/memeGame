@@ -46,7 +46,7 @@ export default async function AdminAssetsPage() {
   const categories = Array.from(new Set(assets.map((asset) => asset.category)));
 
   return (
-    <AppShell>
+    <AppShell variant="admin">
       <div className="grid gap-4" data-testid="admin-assets-page">
         <Panel className="border-lime-300/20 bg-[linear-gradient(145deg,rgba(132,204,22,0.13),rgba(15,23,42,0.94))]">
           <Badge tone="good">Imagegen production assets</Badge>

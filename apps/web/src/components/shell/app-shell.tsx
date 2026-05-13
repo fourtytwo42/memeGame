@@ -9,11 +9,15 @@ import { prisma } from "@meme-foundry/db";
 import {
   Bell,
   CircleHelp,
+  ClipboardList,
+  Database,
   Gauge,
   Home,
+  ImageIcon,
   LogOut,
   Rocket,
   Shield,
+  SlidersHorizontal,
   Trophy,
   Users,
   Zap
@@ -30,13 +34,34 @@ const primaryNav: NavItem[] = [
   { href: "/profile", label: "Profile", icon: CircleHelp }
 ];
 
+const adminNav: NavItem[] = [
+  { href: "/admin", label: "Dashboard", icon: Shield },
+  { href: "/admin#season-editor" as Route, label: "Seasons", icon: Gauge },
+  {
+    href: "/admin#narrative-editor" as Route,
+    label: "Narratives",
+    icon: SlidersHorizontal
+  },
+  { href: "/admin#reports" as Route, label: "Reports", icon: ClipboardList },
+  { href: "/admin#ai-logs" as Route, label: "AI logs", icon: Database },
+  { href: "/admin#image-jobs" as Route, label: "Images", icon: ImageIcon },
+  { href: "/admin/assets", label: "Assets", icon: Trophy }
+];
+
 function daysLeft(endsAt?: Date) {
   if (!endsAt) return "--";
   return `${Math.max(0, Math.ceil((endsAt.getTime() - Date.now()) / 86400000))}d left`;
 }
 
-export async function AppShell({ children }: { children: React.ReactNode }) {
+export async function AppShell({
+  children,
+  variant = "player"
+}: {
+  children: React.ReactNode;
+  variant?: "player" | "admin";
+}) {
   const session = await auth();
+  const isAdminShell = variant === "admin";
   const [season, activeToken, profile] = await Promise.all([
     prisma.season.findFirst({
       where: { status: "active" },
@@ -52,8 +77,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       ? prisma.founderProfile.findUnique({ where: { userId: session.user.id } })
       : null
   ]);
-  const nav: NavItem[] =
-    session?.user.role === "admin"
+  const nav: NavItem[] = isAdminShell
+    ? adminNav
+    : session?.user.role === "admin"
       ? [...primaryNav, { href: "/admin", label: "Admin", icon: Shield }]
       : primaryNav;
 
@@ -86,37 +112,54 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             </span>
           </span>
         </Link>
-        <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.04] p-2 sm:mt-5 sm:p-3">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-300">
-            <span className="hidden sm:inline">
-              {season?.name ?? "No active season"}
-            </span>
-            <span className="sm:hidden">
-              {season?.name ? season.name.slice(0, 2) : "--"}
-            </span>
-          </p>
-          {activeToken ? (
-            <Link
-              aria-label={`Manage ${activeToken.ticker}`}
-              className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-lime-300/40 bg-lime-300/10 px-2 py-2 text-sm font-black text-lime-200 hover:bg-lime-300/20 sm:px-3"
-              data-testid="manage-launch-affordance"
-              href={`/launch/${activeToken.id}/manage` as Route}
-            >
-              <Zap aria-hidden="true" size={16} />
-              <span className="hidden sm:inline">
-                Manage {activeToken.ticker}
-              </span>
-            </Link>
-          ) : null}
-          <div className="mt-3 hidden grid-cols-2 gap-2 text-xs font-black sm:grid">
-            <div className="rounded-md bg-slate-950/70 p-2 text-lime-200">
-              {daysLeft(season?.endsAt)}
-            </div>
-            <div className="rounded-md bg-slate-950/70 p-2 text-pink-200">
-              live
+        {isAdminShell ? (
+          <div className="mt-4 rounded-lg border border-violet-300/20 bg-violet-300/10 p-2 sm:mt-5 sm:p-3">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-violet-200">
+              <span className="hidden sm:inline">Admin console</span>
+              <span className="sm:hidden">AD</span>
+            </p>
+            <div className="mt-3 hidden grid-cols-1 gap-2 text-xs font-black sm:grid">
+              <div className="rounded-md bg-slate-950/70 p-2 text-violet-100">
+                Host-native VM
+              </div>
+              <div className="rounded-md bg-slate-950/70 p-2 text-emerald-200">
+                Live ops
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.04] p-2 sm:mt-5 sm:p-3">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-300">
+              <span className="hidden sm:inline">
+                {season?.name ?? "No active season"}
+              </span>
+              <span className="sm:hidden">
+                {season?.name ? season.name.slice(0, 2) : "--"}
+              </span>
+            </p>
+            {activeToken ? (
+              <Link
+                aria-label={`Manage ${activeToken.ticker}`}
+                className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-lime-300/40 bg-lime-300/10 px-2 py-2 text-sm font-black text-lime-200 hover:bg-lime-300/20 sm:px-3"
+                data-testid="manage-launch-affordance"
+                href={`/launch/${activeToken.id}/manage` as Route}
+              >
+                <Zap aria-hidden="true" size={16} />
+                <span className="hidden sm:inline">
+                  Manage {activeToken.ticker}
+                </span>
+              </Link>
+            ) : null}
+            <div className="mt-3 hidden grid-cols-2 gap-2 text-xs font-black sm:grid">
+              <div className="rounded-md bg-slate-950/70 p-2 text-lime-200">
+                {daysLeft(season?.endsAt)}
+              </div>
+              <div className="rounded-md bg-slate-950/70 p-2 text-pink-200">
+                live
+              </div>
+            </div>
+          </div>
+        )}
         <nav aria-label="Primary" className="mt-5 grid gap-2">
           {nav.map((item) => (
             <Link
@@ -188,7 +231,39 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         data-testid="app-scroll-content"
       >
         <div className="mx-auto max-w-[94rem] px-3 py-3 sm:px-6 sm:py-4 lg:px-6 xl:px-8">
-          {session?.user ? (
+          {session?.user && isAdminShell ? (
+            <div
+              className="mb-4 grid gap-2 rounded-lg border border-violet-300/15 bg-slate-950/70 p-3 shadow-xl shadow-black/20 sm:grid-cols-4"
+              data-testid="admin-resource-strip"
+            >
+              <div>
+                <p className="text-xs font-black uppercase text-violet-200">
+                  Admin
+                </p>
+                <p className="truncate font-black text-white">
+                  {session.user.username}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-black uppercase text-slate-400">
+                  Window
+                </p>
+                <p className="font-black text-cyan-200">Last 15 minutes</p>
+              </div>
+              <div>
+                <p className="text-xs font-black uppercase text-slate-400">
+                  Refresh
+                </p>
+                <p className="font-black text-emerald-200">Manual + live</p>
+              </div>
+              <div>
+                <p className="text-xs font-black uppercase text-slate-400">
+                  Runtime
+                </p>
+                <p className="font-black text-amber-200">Host-native VM</p>
+              </div>
+            </div>
+          ) : session?.user ? (
             <div
               className="mb-4 grid gap-2 rounded-lg border border-white/10 bg-slate-950/55 p-3 shadow-xl shadow-black/20 sm:grid-cols-4"
               data-testid="shell-resource-strip"
