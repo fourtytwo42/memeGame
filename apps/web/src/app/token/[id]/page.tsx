@@ -277,6 +277,97 @@ export default async function PublicTokenPage({
                 tone="good"
                 value={graduationProgress(token)}
               />
+              <div className="border-t border-white/10 pt-3">
+                <p className="text-xs font-black uppercase text-cyan-200">
+                  Quick support
+                </p>
+                <div className="mt-3 grid gap-2">
+                  {(
+                    [
+                      SUPPORT_ACTION_CATALOG.MAKE_MEME,
+                      SUPPORT_ACTION_CATALOG.DEFEND_CHAT
+                    ] satisfies Array<
+                      (typeof SUPPORT_ACTION_CATALOG)[SupportActionId]
+                    >
+                  ).map((action) => {
+                    const last = latestByAction.get(action.id);
+                    const remainingSeconds = last
+                      ? Math.max(
+                          0,
+                          Math.ceil(
+                            (last.getTime() +
+                              action.cooldownSeconds * 1000 -
+                              now) /
+                              1000
+                          )
+                        )
+                      : 0;
+                    const disabledReason = !sessionUser
+                      ? "Sign in to support."
+                      : isOwner
+                        ? "You cannot support your own launch here."
+                        : token.status !== "live"
+                          ? "Only live launches can receive support."
+                          : sessionUser.supportEnergy < action.energyCost
+                            ? "Not enough support energy."
+                            : remainingSeconds > 0
+                              ? cooldownLabel(remainingSeconds)
+                              : null;
+                    return (
+                      <form
+                        action={supportTokenAction}
+                        className="rounded-md border border-cyan-300/20 bg-cyan-300/10 p-3"
+                        data-testid={`quick-support-${action.id}`}
+                        key={action.id}
+                      >
+                        <input name="tokenId" type="hidden" value={token.id} />
+                        <input
+                          name="actionId"
+                          type="hidden"
+                          value={action.id}
+                        />
+                        <input
+                          name="nonce"
+                          type="hidden"
+                          value={`quick-${token.id}-${action.id}-${Date.now()}`}
+                        />
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="font-black text-white">
+                              {displaySupportLabel(action.id)}
+                            </p>
+                            <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-300">
+                              {action.plainPurpose}
+                            </p>
+                          </div>
+                          <Badge tone="good">Energy {action.energyCost}</Badge>
+                        </div>
+                        {sessionUser ? (
+                          <Button
+                            className="mt-3 w-full"
+                            disabled={Boolean(disabledReason)}
+                            type="submit"
+                          >
+                            Support launch
+                          </Button>
+                        ) : (
+                          <Link
+                            className="mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-md bg-cyan-300 px-3 py-2 text-sm font-black text-slate-950 hover:bg-cyan-200"
+                            href="/signin"
+                          >
+                            Sign in
+                          </Link>
+                        )}
+                        {disabledReason ? (
+                          <p className="mt-2 text-xs font-bold text-amber-200">
+                            {disabledReason}
+                          </p>
+                        ) : null}
+                      </form>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </NeonPanel>
