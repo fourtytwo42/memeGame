@@ -13,6 +13,7 @@ import {
 } from "@meme-foundry/ui";
 import { auth } from "@/auth";
 import { AppShell } from "@/components/shell/app-shell";
+import { tokenImage } from "@/lib/assets";
 import {
   CREW_ACTION_CATALOG,
   type CrewActionId
@@ -146,15 +147,21 @@ export default async function CrewDetailPage({
         ) : null}
 
         <NeonPanel tone="cyan">
-          <div className="grid gap-5 xl:grid-cols-[8rem_minmax(0,1fr)_20rem] xl:items-center">
-            <Image
-              alt={`${crew.name} crew avatar`}
-              className="mx-auto size-32 rounded-lg border border-cyan-300/25 bg-slate-950/55 object-contain p-3"
-              height={128}
-              priority
-              src={crew.avatarUrl ?? "/assets/game/crews/default-avatar.png"}
-              width={128}
-            />
+          <div className="grid gap-5 xl:grid-cols-[14rem_minmax(0,1fr)_20rem] xl:items-center">
+            <div className="rounded-lg border border-cyan-300/25 bg-[radial-gradient(circle_at_50%_30%,rgba(34,211,238,0.22),rgba(15,23,42,0.78)_58%,rgba(2,6,23,0.96))] p-4 shadow-[0_0_36px_rgba(34,211,238,0.16)]">
+              <Image
+                alt={`${crew.name} crew avatar`}
+                className="mx-auto size-40 object-contain drop-shadow-[0_0_22px_rgba(34,211,238,0.22)]"
+                height={160}
+                priority
+                src={crew.avatarUrl ?? "/assets/game/crews/default-avatar.png"}
+                width={160}
+              />
+              <div className="mt-3 flex flex-wrap justify-center gap-2">
+                <Badge tone="warn">Rank #{rank}</Badge>
+                <Badge tone="good">{crew._count.members} members</Badge>
+              </div>
+            </div>
             <div>
               <Kicker className="text-cyan-100">Crew command room</Kicker>
               <div className="flex flex-wrap items-center gap-2">
@@ -216,11 +223,7 @@ export default async function CrewDetailPage({
                   alt={`${crew.featuredToken.name} token art`}
                   className="size-20 rounded-md border border-white/10 bg-slate-950/70 object-contain p-1"
                   height={80}
-                  src={
-                    crew.featuredToken.cardImageUrl ??
-                    crew.featuredToken.placeholderImageUrl ??
-                    "/assets/game/tokens/default-token-mascot.png"
-                  }
+                  src={tokenImage(crew.featuredToken)}
                   width={80}
                 />
                 <div>
@@ -444,6 +447,22 @@ export default async function CrewDetailPage({
               <h2 className="mb-4 flex items-center gap-2 font-black text-white">
                 <Trophy className="text-amber-300" size={18} /> Badges
               </h2>
+              <div className="mb-4 grid grid-cols-3 gap-2">
+                {[
+                  "/assets/game/crews/top-rank-badge.png",
+                  "/assets/game/crews/raid-ready-badge.png",
+                  "/assets/game/crews/lore-spread-badge.png"
+                ].map((src) => (
+                  <Image
+                    alt="Crew badge art"
+                    className="aspect-square w-full rounded-md border border-white/10 bg-slate-950/70 object-contain p-1"
+                    height={96}
+                    key={src}
+                    src={src}
+                    width={96}
+                  />
+                ))}
+              </div>
               <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
                 <MetricChip label="Rank" tone="warn" value={`#${rank}`} />
                 <MetricChip

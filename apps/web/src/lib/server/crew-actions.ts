@@ -291,9 +291,14 @@ export async function executeCrewActionForUser(input: {
     throw new CrewActionError("Not enough crew energy.");
   if (crew.resources < action.resourceCost)
     throw new CrewActionError("Not enough crew resources.");
-  const token = await prisma.launchToken.findFirstOrThrow({
+  const token = await prisma.launchToken.findFirst({
     where: { id: crew.featuredTokenId, status: "live" }
   });
+  if (!token) {
+    throw new CrewActionError(
+      "The featured launch is no longer live. Feature a live launch before running crew support."
+    );
+  }
   const idempotencyKey = `${crew.id}:${input.userId}:${input.actionId}:${input.nonce}`;
   const next = applyCrewEffects(token, action);
 
