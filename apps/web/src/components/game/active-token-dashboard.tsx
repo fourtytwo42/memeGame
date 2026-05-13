@@ -20,9 +20,19 @@ import {
   XAxis,
   YAxis
 } from "recharts";
-import { Badge, Button, Panel, StatBar } from "@meme-foundry/ui";
+import {
+  Badge,
+  Button,
+  Kicker,
+  MetricChip,
+  NeonPanel,
+  Panel,
+  ProgressMeter,
+  StatBar
+} from "@meme-foundry/ui";
 import { executeTokenAction } from "@/app/launch/[id]/manage/actions";
 import { RealtimeStatus } from "@/components/realtime/realtime-status";
+import { narrativeImage } from "@/lib/assets";
 import type { ActionDefinition } from "@meme-foundry/game-engine";
 
 type StatGroup = {
@@ -47,6 +57,8 @@ type DashboardProps = {
     ticker: string;
     status: string;
     founderName: string;
+    launchedAt: string;
+    rank: number | null;
     imageUrl: string;
     marketCap: number;
     price: string;
@@ -93,6 +105,27 @@ type DashboardProps = {
     description: string;
     actionId?: string;
   } | null;
+  topSupporters: Array<{
+    username: string;
+    actions: number;
+    latestAction: string;
+    crewName?: string | null;
+  }>;
+  crewSupport: {
+    name: string;
+    avatarUrl?: string | null;
+    members: number;
+    resources: number;
+    score: number;
+  } | null;
+  narrativeContext: {
+    name: string;
+    slug?: string | null;
+    heat: number | null;
+    saturation: number | null;
+    fatigue: number | null;
+    activeLaunches: number | null;
+  };
   message?: string | null;
   error?: string | null;
   nonceSeed: string;
@@ -113,6 +146,24 @@ function fmtMoney(value: number) {
     notation: "compact",
     style: "currency"
   }).format(value);
+}
+
+function ageLabel(value: string) {
+  const then = new Date(value).getTime();
+  const diff = Math.max(0, Date.now() - then);
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "Just launched";
+  if (minutes < 60) return `${minutes}m live`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 48) return `${hours}h live`;
+  return `${Math.floor(hours / 24)}d live`;
+}
+
+function opportunityLabel(input: DashboardProps["narrativeContext"]) {
+  if (input.fatigue !== null && input.fatigue > 70) return "Cooling";
+  if (input.saturation !== null && input.saturation > 65) return "Crowded";
+  if (input.heat !== null && input.heat > 70) return "Hot";
+  return "Playable";
 }
 
 function cooldownLabel(cooldown?: Cooldown) {
@@ -217,6 +268,9 @@ export function ActiveTokenDashboard({
   actionFeed,
   aiCoach,
   pinnedEvent,
+  topSupporters,
+  crewSupport,
+  narrativeContext,
   message,
   error,
   nonceSeed,
@@ -254,22 +308,25 @@ export function ActiveTokenDashboard({
       ) : null}
 
       <Panel
-        className="bg-[linear-gradient(145deg,rgba(16,185,129,0.16),rgba(15,23,42,0.9))]"
+        className="bg-[linear-gradient(145deg,rgba(16,185,129,0.16),rgba(14,165,233,0.08),rgba(15,23,42,0.95))]"
         data-testid="manage-token-header"
       >
-        <div className="grid gap-4 md:grid-cols-[9rem_1fr] md:items-center">
-          <Image
-            alt={`${token.name} placeholder art`}
-            className="size-32 rounded-lg border border-white/10 bg-slate-950/50 p-3"
-            height={128}
-            priority
-            src={token.imageUrl}
-            width={128}
-          />
+        <div className="grid gap-5 lg:grid-cols-[13rem_minmax(0,1fr)] lg:items-center">
+          <div className="rounded-lg border border-cyan-300/25 bg-slate-950/55 p-4 shadow-[0_0_34px_rgba(34,211,238,0.18)]">
+            <Image
+              alt={`${token.name} token art`}
+              className="mx-auto size-44 object-contain"
+              height={176}
+              priority
+              src={token.imageUrl}
+              width={176}
+            />
+          </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone="good">{token.status}</Badge>
               <Badge>${token.ticker}</Badge>
+              <Badge tone="warn">{ageLabel(token.launchedAt)}</Badge>
               <span className="text-sm font-bold text-slate-300">
                 Founder: {token.founderName}
               </span>
@@ -281,49 +338,35 @@ export function ActiveTokenDashboard({
               Keep attention useful, build belief, and reach graduation before
               fatigue or risk burns the run down.
             </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-4">
-              <div className="rounded-md bg-slate-950/45 p-3">
-                <p className="text-xs font-bold uppercase text-slate-400">
-                  Market cap
-                </p>
-                <p className="font-black text-white">
-                  {fmtMoney(token.marketCap)}
-                </p>
-              </div>
-              <div className="rounded-md bg-slate-950/45 p-3">
-                <p className="text-xs font-bold uppercase text-slate-400">
-                  Holders
-                </p>
-                <p className="font-black text-white">
-                  {fmtNumber(token.holders)}
-                </p>
-              </div>
-              <div className="rounded-md bg-slate-950/45 p-3">
-                <p className="text-xs font-bold uppercase text-slate-400">
-                  Energy
-                </p>
-                <p className="font-black text-white">{token.energy}/100</p>
-              </div>
-              <div className="rounded-md bg-slate-950/45 p-3">
-                <p className="text-xs font-bold uppercase text-slate-400">
-                  Budget
-                </p>
-                <p className="font-black text-white">
-                  {fmtMoney(token.treasury)}
-                </p>
-              </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+              <MetricChip
+                label="Market cap"
+                tone="good"
+                value={fmtMoney(token.marketCap)}
+              />
+              <MetricChip label="Holders" value={fmtNumber(token.holders)} />
+              <MetricChip
+                label="Rank"
+                tone="warn"
+                value={token.rank ? `#${token.rank}` : "Unranked"}
+              />
+              <MetricChip
+                label="Energy"
+                tone="hot"
+                value={`${token.energy}/100`}
+              />
+              <MetricChip
+                label="Budget"
+                tone="neutral"
+                value={fmtMoney(token.treasury)}
+              />
             </div>
             <div className="mt-4">
-              <div className="mb-2 flex justify-between text-sm font-bold text-slate-200">
-                <span>Graduation progress</span>
-                <span>{token.graduationProgress}%</span>
-              </div>
-              <div className="h-3 overflow-hidden rounded-full bg-slate-950">
-                <div
-                  className="h-full rounded-full bg-emerald-300"
-                  style={{ width: `${token.graduationProgress}%` }}
-                />
-              </div>
+              <ProgressMeter
+                label="Graduation progress"
+                tone="good"
+                value={token.graduationProgress}
+              />
             </div>
           </div>
         </div>
@@ -331,6 +374,65 @@ export function ActiveTokenDashboard({
 
       <div className="grid gap-4 xl:grid-cols-[1fr_24rem]">
         <main className="grid gap-4">
+          <NeonPanel data-testid="recommended-action-row" tone="lime">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <Kicker className="text-lime-100">Recommended move</Kicker>
+                <h2 className="mt-2 text-2xl font-black text-white">
+                  {flatActions.find(
+                    (action) => action.id === recommendedActionId
+                  )?.label ?? "Choose the next move"}
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
+                  This is the safest current move based on energy, fake budget,
+                  risk pressure, and launch momentum. Use the full action list
+                  below when you want a different posture.
+                </p>
+              </div>
+              <Badge tone="good">Best next action</Badge>
+            </div>
+            {flatActions.find((action) => action.id === recommendedActionId) ? (
+              <div className="mt-4">
+                <ActionCard
+                  action={{
+                    ...flatActions.find(
+                      (action) => action.id === recommendedActionId
+                    )!,
+                    recommended: true
+                  }}
+                  nonceSeed={`${nonceSeed}-recommended`}
+                  slot="pinned"
+                  tokenId={token.id}
+                />
+              </div>
+            ) : null}
+          </NeonPanel>
+
+          {pinnedEvent ? (
+            <Panel
+              className="border-amber-300/25 bg-amber-300/10"
+              data-testid="active-situation-card"
+            >
+              <Badge tone="warn">Active situation</Badge>
+              <h2 className="mt-3 text-xl font-black text-white">
+                {pinnedEvent.title}
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-amber-100">
+                {pinnedEvent.description}
+              </p>
+              {pinnedAction ? (
+                <div className="mt-4">
+                  <ActionCard
+                    action={{ ...pinnedAction, recommended: true }}
+                    nonceSeed={`${nonceSeed}-event`}
+                    slot="pinned"
+                    tokenId={token.id}
+                  />
+                </div>
+              ) : null}
+            </Panel>
+          ) : null}
+
           <Panel data-testid="market-chart-panel">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
@@ -343,7 +445,18 @@ export function ActiveTokenDashboard({
               </div>
               <Badge tone="good">Score {fmtNumber(token.score)}</Badge>
             </div>
-            <div className="h-72 w-full" data-testid="token-market-chart">
+            <div className="mb-3 flex flex-wrap gap-2 text-xs font-black text-slate-300">
+              <span className="rounded-full bg-emerald-300/15 px-2 py-1 text-emerald-100">
+                Market cap
+              </span>
+              <span className="rounded-full bg-cyan-300/15 px-2 py-1 text-cyan-100">
+                Current price {token.price}
+              </span>
+              <span className="rounded-full bg-white/10 px-2 py-1">
+                Volume {fmtMoney(token.volume)}
+              </span>
+            </div>
+            <div className="h-80 w-full" data-testid="token-market-chart">
               <ResponsiveContainer height="100%" width="100%">
                 <AreaChart data={chart} margin={{ left: 0, right: 16 }}>
                   <CartesianGrid stroke="rgba(148,163,184,0.16)" />
@@ -469,6 +582,110 @@ export function ActiveTokenDashboard({
             tokenId={token.id}
             userId={userId}
           />
+          <Panel data-testid="narrative-context-panel">
+            <div className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-3">
+              <Image
+                alt={`${narrativeContext.name} narrative art`}
+                className="size-18 rounded-md border border-white/10 bg-slate-950/70 object-contain p-1"
+                height={72}
+                src={narrativeImage(
+                  narrativeContext.slug ?? narrativeContext.name
+                )}
+                width={72}
+              />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  Narrative
+                </p>
+                <h2 className="mt-1 font-black text-white">
+                  {narrativeContext.name}
+                </h2>
+                <Badge tone="warn">{opportunityLabel(narrativeContext)}</Badge>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-2">
+              <ProgressMeter
+                label="Heat"
+                tone="hot"
+                value={narrativeContext.heat ?? token.stats.Narrative}
+              />
+              <ProgressMeter
+                label="Saturation"
+                tone="warn"
+                value={narrativeContext.saturation ?? 40}
+              />
+              <ProgressMeter
+                label="Fatigue"
+                tone="bad"
+                value={narrativeContext.fatigue ?? token.stats.Fatigue}
+              />
+            </div>
+            <p className="mt-3 text-xs font-semibold text-slate-400">
+              {narrativeContext.activeLaunches ?? 0} active launches in this
+              trend.
+            </p>
+          </Panel>
+          <Panel data-testid="top-supporters-panel">
+            <h2 className="font-black text-white">Top supporters</h2>
+            <div className="mt-3 grid gap-2">
+              {topSupporters.length ? (
+                topSupporters.map((supporter) => (
+                  <div
+                    className="rounded-md border border-white/10 bg-slate-950/55 p-3"
+                    key={supporter.username}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-black text-white">
+                        {supporter.username}
+                      </p>
+                      <Badge tone="good">{supporter.actions}x</Badge>
+                    </div>
+                    <p className="mt-1 text-sm text-slate-300">
+                      {supporter.latestAction}
+                      {supporter.crewName ? ` via ${supporter.crewName}` : ""}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm leading-6 text-slate-400">
+                  No public support yet. Share the token page to invite meme,
+                  lore, and defense actions.
+                </p>
+              )}
+            </div>
+          </Panel>
+          <Panel data-testid="crew-support-panel">
+            <h2 className="font-black text-white">Crew support</h2>
+            {crewSupport ? (
+              <div className="mt-3 grid grid-cols-[3.5rem_minmax(0,1fr)] gap-3">
+                <Image
+                  alt={`${crewSupport.name} crew avatar`}
+                  className="size-14 rounded-md border border-white/10 bg-slate-950/70 object-contain p-1"
+                  height={56}
+                  src={
+                    crewSupport.avatarUrl ??
+                    "/assets/game/crews/default-avatar.png"
+                  }
+                  width={56}
+                />
+                <div>
+                  <p className="font-black text-white">{crewSupport.name}</p>
+                  <p className="mt-1 text-sm text-slate-300">
+                    {crewSupport.members} members · {crewSupport.resources}{" "}
+                    resources
+                  </p>
+                  <p className="mt-1 text-sm font-bold text-lime-200">
+                    Crew score {fmtNumber(crewSupport.score)}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <p className="mt-3 text-sm leading-6 text-slate-400">
+                No crew is actively backing this launch yet. Feature it from a
+                crew page to unlock coordinated support.
+              </p>
+            )}
+          </Panel>
           <Panel data-testid="ai-coach-panel">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -509,31 +726,6 @@ export function ActiveTokenDashboard({
               {aiCoach.riskNote}
             </p>
           </Panel>
-          {pinnedEvent ? (
-            <Panel
-              className="border-amber-300/25 bg-amber-300/10"
-              data-testid="active-situation-card"
-            >
-              <Badge tone="warn">Active situation</Badge>
-              <h2 className="mt-3 text-xl font-black text-white">
-                {pinnedEvent.title}
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-amber-100">
-                {pinnedEvent.description}
-              </p>
-              {pinnedAction ? (
-                <div className="mt-4">
-                  <ActionCard
-                    action={{ ...pinnedAction, recommended: true }}
-                    nonceSeed={`${nonceSeed}-event`}
-                    slot="pinned"
-                    tokenId={token.id}
-                  />
-                </div>
-              ) : null}
-            </Panel>
-          ) : null}
-
           <Panel data-testid="recent-action-feed">
             <div className="mb-3 flex items-center gap-2">
               <Clock3 className="text-emerald-300" size={18} />

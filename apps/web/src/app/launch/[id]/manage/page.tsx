@@ -56,6 +56,7 @@ export default async function ManageTokenPage({
     include: {
       user: true,
       season: true,
+      crew: { include: { _count: { select: { members: true } } } },
       ticks: { orderBy: { createdAt: "asc" }, take: 40 },
       events: { orderBy: { createdAt: "desc" }, take: 8 },
       actions: { orderBy: { createdAt: "desc" }, take: 12 }
@@ -64,6 +65,69 @@ export default async function ManageTokenPage({
   if (!token) redirect("/play");
 
   const recommended = recommendedActionFor(token);
+  const [rankSnapshot, narrativeMeta, supportActions, featuringCrew] =
+    await Promise.all([
+      token.seasonId
+        ? prisma.scoreSnapshot.findFirst({
+            where: {
+              category: "score",
+              entityId: token.id,
+              entityType: "token",
+              seasonId: token.seasonId
+            }
+          })
+        : null,
+      token.seasonId && token.narrativeSlug
+        ? prisma.narrativeMeta.findUnique({
+            where: {
+              seasonId_slug: {
+                seasonId: token.seasonId,
+                slug: token.narrativeSlug
+              }
+            }
+          })
+        : null,
+      prisma.supportAction.findMany({
+        where: { tokenId: token.id },
+        include: { crew: true, user: true },
+        orderBy: { createdAt: "desc" },
+        take: 20
+      }),
+      prisma.crew.findFirst({
+        where: { featuredTokenId: token.id },
+        include: { _count: { select: { members: true } } },
+        orderBy: { score: "desc" }
+      })
+    ]);
+  const supporterMap = new Map<
+    string,
+    {
+      username: string;
+      actions: number;
+      latestAction: string;
+      crewName?: string | null;
+    }
+  >();
+  for (const support of supportActions) {
+    const existing = supporterMap.get(support.userId);
+    if (existing) {
+      existing.actions += 1;
+      continue;
+    }
+    supporterMap.set(support.userId, {
+      username: support.user.username,
+      actions: 1,
+      latestAction: support.actionType
+        .split("_")
+        .map((part) => part[0] + part.slice(1).toLowerCase())
+        .join(" "),
+      crewName: support.crew?.name
+    });
+  }
+  const topSupporters = [...supporterMap.values()]
+    .sort((a, b) => b.actions - a.actions)
+    .slice(0, 5);
+  const crew = token.crew ?? featuringCrew;
   const latestByAction = new Map(
     token.actions.map((action) => [action.actionType, action.createdAt])
   );
@@ -203,6 +267,9 @@ export default async function ManageTokenPage({
           ticker: token.ticker,
           status: token.status,
           founderName: token.user.name ?? token.user.username,
+          launchedAt:
+            token.launchedAt?.toISOString() ?? token.createdAt.toISOString(),
+          rank: rankSnapshot?.rank ?? null,
           imageUrl:
             token.cardImageUrl ??
             token.placeholderImageUrl ??
@@ -227,6 +294,26 @@ export default async function ManageTokenPage({
             Fatigue: token.fatigue
           }
         }}
+        crewSupport={
+          crew
+            ? {
+                name: crew.name,
+                avatarUrl: crew.avatarUrl,
+                members: crew._count.members,
+                resources: crew.resources,
+                score: crew.score
+              }
+            : null
+        }
+        narrativeContext={{
+          activeLaunches: narrativeMeta?.activeLaunches ?? null,
+          fatigue: narrativeMeta?.fatigue ?? null,
+          heat: narrativeMeta?.heat ?? null,
+          name: narrativeMeta?.name ?? token.narrative,
+          saturation: narrativeMeta?.saturation ?? null,
+          slug: narrativeMeta?.slug ?? token.narrativeSlug
+        }}
+        topSupporters={topSupporters}
       />
     </AppShell>
   );
