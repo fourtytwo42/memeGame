@@ -1,4 +1,4 @@
-﻿# UI Alignment Final Acceptance Report
+# UI Alignment Final Acceptance Report
 
 Date: 2026-05-12
 Target: `http://192.168.50.209`
