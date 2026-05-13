@@ -6,7 +6,7 @@ test("supporter can support another public token and sees cooldown", async ({
 }, testInfo) => {
   const actionId =
     testInfo.project.name === "mobile-chrome" ? "MAKE_MEME" : "SHARE_LAUNCH";
-  const actionLabel = actionId === "MAKE_MEME" ? "Make Meme" : "Share Launch";
+  const actionLabel = actionId === "MAKE_MEME" ? "Make Meme" : "Signal Boost";
   const supporter = await prisma.user.findUniqueOrThrow({
     where: { email: "supporter@example.com" }
   });

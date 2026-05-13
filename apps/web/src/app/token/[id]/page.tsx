@@ -1,11 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Badge, Button, Panel, StatBar } from "@meme-foundry/ui";
+import {
+  Badge,
+  Button,
+  Kicker,
+  MetricChip,
+  NeonPanel,
+  Panel,
+  ProgressMeter,
+  StatBar
+} from "@meme-foundry/ui";
 import { auth } from "@/auth";
 import { PublicMarketChart } from "@/components/game/public-market-chart";
 import { RealtimeStatus } from "@/components/realtime/realtime-status";
 import { AppShell } from "@/components/shell/app-shell";
+import { narrativeImage } from "@/lib/assets";
 import {
   formatCompactCurrency,
   formatPrice,
@@ -21,6 +31,8 @@ import {
   ArrowRight,
   HeartHandshake,
   Info,
+  MessageCircle,
+  Palette,
   Radio,
   Users,
   Zap
@@ -48,6 +60,19 @@ function cooldownLabel(seconds: number) {
   return `${minutes} min cooldown`;
 }
 
+function displaySupportLabel(actionId: string) {
+  if (actionId === "SHARE_LAUNCH") return "Signal Boost";
+  return SUPPORT_ACTION_CATALOG[actionId as SupportActionId]?.label ?? actionId;
+}
+
+function supportCardTone(actionId: string) {
+  if (actionId === "MAKE_MEME") return "border-pink-300/25 bg-pink-400/10";
+  if (actionId === "DEFEND_CHAT") return "border-cyan-300/25 bg-cyan-400/10";
+  if (actionId === "WRITE_LORE") return "border-violet-300/25 bg-violet-400/10";
+  if (actionId === "SHARE_LAUNCH") return "border-lime-300/25 bg-lime-300/10";
+  return "border-white/10 bg-slate-950/55";
+}
+
 export default async function PublicTokenPage({
   params,
   searchParams
@@ -65,6 +90,7 @@ export default async function PublicTokenPage({
       crew: true,
       ticks: { orderBy: { createdAt: "asc" }, take: 48 },
       events: { orderBy: { createdAt: "desc" }, take: 10 },
+      imageJobs: { orderBy: { createdAt: "desc" }, take: 3 },
       supportActions: {
         orderBy: { createdAt: "desc" },
         take: 24,
@@ -96,11 +122,42 @@ export default async function PublicTokenPage({
       createdAt: { gte: new Date(Date.now() - 60 * 60 * 1000) }
     }
   });
+  const narrativeMeta =
+    token.seasonId && token.narrativeSlug
+      ? await prisma.narrativeMeta.findUnique({
+          where: {
+            seasonId_slug: {
+              seasonId: token.seasonId,
+              slug: token.narrativeSlug
+            }
+          }
+        })
+      : null;
+  const topSupporters = Array.from(
+    [...token.supportActions]
+      .reduce((map, support) => {
+        const current = map.get(support.userId);
+        if (current) {
+          current.actions += 1;
+          return map;
+        }
+        map.set(support.userId, {
+          actions: 1,
+          latestAction: displaySupportLabel(support.actionType),
+          username: support.user.username
+        });
+        return map;
+      }, new Map<string, { username: string; actions: number; latestAction: string }>())
+      .values()
+  )
+    .sort((a, b) => b.actions - a.actions)
+    .slice(0, 5);
+  const latestImageJob = token.imageJobs[0];
   const successAction = readParam(query, "support");
   const error = readParam(query, "error");
   const successLabel =
     successAction && successAction in SUPPORT_ACTION_CATALOG
-      ? SUPPORT_ACTION_CATALOG[successAction as SupportActionId].label
+      ? displaySupportLabel(successAction)
       : null;
   const chartTicks = token.ticks.length
     ? token.ticks
@@ -142,24 +199,28 @@ export default async function PublicTokenPage({
           </Panel>
         ) : null}
 
-        <Panel
-          className="border-lime-300/25 bg-[linear-gradient(145deg,rgba(132,204,22,0.16),rgba(15,23,42,0.92))]"
+        <NeonPanel
+          className="border-lime-300/25"
           data-testid="public-token-header"
+          tone="lime"
         >
-          <div className="grid gap-5 lg:grid-cols-[10rem_1fr_15rem] lg:items-center">
-            <Image
-              alt={`${token.name} token art`}
-              className="size-36 rounded-lg border border-white/10 bg-slate-950/55 p-3"
-              height={144}
-              priority
-              src={
-                token.cardImageUrl ??
-                token.placeholderImageUrl ??
-                "/assets/game/tokens/default-token-mascot.png"
-              }
-              width={144}
-            />
+          <div className="grid gap-5 lg:grid-cols-[15rem_minmax(0,1fr)_17rem] lg:items-center">
+            <div className="rounded-lg border border-lime-300/25 bg-slate-950/55 p-4 shadow-[0_0_34px_rgba(132,204,22,0.16)]">
+              <Image
+                alt={`${token.name} token art`}
+                className="mx-auto size-52 object-contain"
+                height={208}
+                priority
+                src={
+                  token.cardImageUrl ??
+                  token.placeholderImageUrl ??
+                  "/assets/game/tokens/default-token-mascot.png"
+                }
+                width={208}
+              />
+            </div>
             <div>
+              <Kicker className="text-lime-100">Public launch page</Kicker>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone={token.status === "graduated" ? "good" : "neutral"}>
                   {token.status}
@@ -177,6 +238,27 @@ export default async function PublicTokenPage({
                 {token.description ??
                   "A fictional launch competing for attention, support, and seasonal score. No real trading or liquidity is involved."}
               </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <MetricChip
+                  label="Market cap"
+                  tone="good"
+                  value={formatCompactCurrency(token.simulatedMarketCap)}
+                />
+                <MetricChip
+                  label="Holders"
+                  value={token.simulatedHolders.toLocaleString()}
+                />
+                <MetricChip
+                  label="Score"
+                  tone="warn"
+                  value={token.score.toLocaleString()}
+                />
+                <MetricChip
+                  label="Support"
+                  tone="hot"
+                  value={`${supporterCount}`}
+                />
+              </div>
             </div>
             <div className="grid gap-3 rounded-lg border border-white/10 bg-slate-950/55 p-4">
               <div className="flex items-center gap-2 text-lime-200">
@@ -190,9 +272,14 @@ export default async function PublicTokenPage({
                 unique supporters shown from recent activity. {lastHourSupport}{" "}
                 support moves landed in the last hour.
               </p>
+              <ProgressMeter
+                label="Graduation"
+                tone="good"
+                value={graduationProgress(token)}
+              />
             </div>
           </div>
-        </Panel>
+        </NeonPanel>
 
         <section className="grid gap-4 xl:grid-cols-[1.3fr_0.85fr]">
           <Panel data-testid="public-token-market">
@@ -208,38 +295,24 @@ export default async function PublicTokenPage({
               <Badge tone="neutral">not real trading</Badge>
             </div>
             <div className="grid gap-3 sm:grid-cols-4">
-              <div className="rounded-md bg-slate-950/55 p-3">
-                <p className="text-xs font-bold uppercase text-slate-400">
-                  Market cap
-                </p>
-                <p className="mt-1 text-xl font-black text-white">
-                  {formatCompactCurrency(token.simulatedMarketCap)}
-                </p>
-              </div>
-              <div className="rounded-md bg-slate-950/55 p-3">
-                <p className="text-xs font-bold uppercase text-slate-400">
-                  Price
-                </p>
-                <p className="mt-1 text-xl font-black text-white">
-                  {formatPrice(token.simulatedPrice)}
-                </p>
-              </div>
-              <div className="rounded-md bg-slate-950/55 p-3">
-                <p className="text-xs font-bold uppercase text-slate-400">
-                  Holders
-                </p>
-                <p className="mt-1 text-xl font-black text-white">
-                  {token.simulatedHolders.toLocaleString()}
-                </p>
-              </div>
-              <div className="rounded-md bg-slate-950/55 p-3">
-                <p className="text-xs font-bold uppercase text-slate-400">
-                  Score
-                </p>
-                <p className="mt-1 text-xl font-black text-white">
-                  {token.score.toLocaleString()}
-                </p>
-              </div>
+              <MetricChip
+                label="Market cap"
+                tone="good"
+                value={formatCompactCurrency(token.simulatedMarketCap)}
+              />
+              <MetricChip
+                label="Price"
+                value={formatPrice(token.simulatedPrice)}
+              />
+              <MetricChip
+                label="Holders"
+                value={token.simulatedHolders.toLocaleString()}
+              />
+              <MetricChip
+                label="Score"
+                tone="warn"
+                value={token.score.toLocaleString()}
+              />
             </div>
             <div className="mt-4">
               <PublicMarketChart
@@ -278,16 +351,11 @@ export default async function PublicTokenPage({
                 ))}
               </div>
               <div className="mt-4">
-                <div className="mb-2 flex justify-between text-sm font-bold text-slate-200">
-                  <span>Graduation progress</span>
-                  <span>{graduationProgress(token)}%</span>
-                </div>
-                <div className="h-3 overflow-hidden rounded-full bg-slate-950">
-                  <div
-                    className="h-full rounded-full bg-lime-300"
-                    style={{ width: `${graduationProgress(token)}%` }}
-                  />
-                </div>
+                <ProgressMeter
+                  label="Graduation progress"
+                  tone="good"
+                  value={graduationProgress(token)}
+                />
               </div>
             </Panel>
           </div>
@@ -313,7 +381,16 @@ export default async function PublicTokenPage({
               )}
             </div>
             <div className="grid gap-3 md:grid-cols-2">
-              {Object.values(SUPPORT_ACTION_CATALOG).map((action) => {
+              {(
+                [
+                  SUPPORT_ACTION_CATALOG.MAKE_MEME,
+                  SUPPORT_ACTION_CATALOG.DEFEND_CHAT,
+                  SUPPORT_ACTION_CATALOG.WRITE_LORE,
+                  SUPPORT_ACTION_CATALOG.SHARE_LAUNCH
+                ] satisfies Array<
+                  (typeof SUPPORT_ACTION_CATALOG)[SupportActionId]
+                >
+              ).map((action) => {
                 const last = latestByAction.get(action.id);
                 const remainingSeconds = last
                   ? Math.max(
@@ -338,7 +415,7 @@ export default async function PublicTokenPage({
                 return (
                   <form
                     action={supportTokenAction}
-                    className="rounded-md border border-white/10 bg-slate-950/55 p-4"
+                    className={`rounded-md border p-4 ${supportCardTone(action.id)}`}
                     data-testid={`support-action-${action.id}`}
                     key={action.id}
                   >
@@ -352,7 +429,7 @@ export default async function PublicTokenPage({
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <h3 className="font-black text-white">
-                          {action.label}
+                          {displaySupportLabel(action.id)}
                         </h3>
                         <p className="mt-2 text-sm leading-5 text-slate-300">
                           {action.plainPurpose}
@@ -407,6 +484,75 @@ export default async function PublicTokenPage({
           </Panel>
 
           <div className="grid gap-4">
+            <Panel data-testid="public-token-ecosystem">
+              <h2 className="mb-4 flex items-center gap-2 font-black text-white">
+                <Radio className="text-lime-300" size={18} /> Ecosystem
+              </h2>
+              <div className="grid gap-3">
+                <div className="grid grid-cols-[4rem_minmax(0,1fr)] gap-3 rounded-md border border-white/10 bg-slate-950/55 p-3">
+                  <Image
+                    alt={`${token.narrative} narrative art`}
+                    className="size-16 rounded-md border border-white/10 bg-slate-950/70 object-contain p-1"
+                    height={64}
+                    src={narrativeImage(token.narrativeSlug ?? token.narrative)}
+                    width={64}
+                  />
+                  <div>
+                    <p className="font-black text-white">{token.narrative}</p>
+                    <p className="mt-1 text-sm text-slate-400">
+                      Heat {narrativeMeta?.heat ?? token.narrativeStrength}% ·
+                      Fatigue {narrativeMeta?.fatigue ?? token.fatigue}%
+                    </p>
+                  </div>
+                </div>
+                <div className="rounded-md border border-white/10 bg-slate-950/55 p-3">
+                  <p className="font-black text-white">Image pipeline</p>
+                  <p className="mt-1 text-sm text-slate-400">
+                    {latestImageJob
+                      ? `${latestImageJob.status} · ${latestImageJob.model ?? "local procedural"}`
+                      : token.cardImageUrl
+                        ? "ready · project-local generated art"
+                        : "fallback art active · generation can run later"}
+                  </p>
+                </div>
+                <div className="rounded-md border border-white/10 bg-slate-950/55 p-3">
+                  <p className="font-black text-white">Simulated-only</p>
+                  <p className="mt-1 text-sm text-slate-400">
+                    No wallet, no real liquidity, no real trading. Support
+                    actions only affect game stats.
+                  </p>
+                </div>
+              </div>
+            </Panel>
+            <Panel data-testid="top-supporters-panel">
+              <h2 className="mb-4 flex items-center gap-2 font-black text-white">
+                <Users className="text-cyan-300" size={18} /> Top supporters
+              </h2>
+              <div className="grid gap-2">
+                {topSupporters.length ? (
+                  topSupporters.map((supporter) => (
+                    <div
+                      className="flex items-center justify-between gap-3 rounded-md bg-slate-950/55 p-3"
+                      key={supporter.username}
+                    >
+                      <div>
+                        <p className="font-black text-white">
+                          {supporter.username}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {supporter.latestAction}
+                        </p>
+                      </div>
+                      <Badge tone="good">{supporter.actions}x</Badge>
+                    </div>
+                  ))
+                ) : (
+                  <p className="rounded-md bg-slate-950/45 p-3 text-sm text-slate-400">
+                    No supporters yet. The first support move will appear here.
+                  </p>
+                )}
+              </div>
+            </Panel>
             <Panel data-testid="supporter-list">
               <h2 className="mb-4 flex items-center gap-2 font-black text-white">
                 <Users className="text-cyan-300" size={18} /> Recent supporters
@@ -425,7 +571,9 @@ export default async function PublicTokenPage({
                         <p className="text-xs text-slate-400">
                           {SUPPORT_ACTION_CATALOG[
                             support.actionType as SupportActionId
-                          ]?.label ?? support.actionType}
+                          ]
+                            ? displaySupportLabel(support.actionType)
+                            : support.actionType}
                         </p>
                       </div>
                       <Badge>Energy {support.energyCost}</Badge>
@@ -440,9 +588,34 @@ export default async function PublicTokenPage({
               </div>
             </Panel>
 
+            <Panel data-testid="npc-chatter-panel">
+              <h2 className="mb-4 flex items-center gap-2 font-black text-white">
+                <MessageCircle className="text-pink-300" size={18} /> NPC feed
+              </h2>
+              <div className="grid gap-3">
+                {token.events.slice(0, 3).map((event) => (
+                  <div
+                    className="rounded-md border border-white/10 bg-slate-950/55 p-3"
+                    key={`npc-${event.id}`}
+                  >
+                    <p className="font-black text-white">
+                      @
+                      {event.severity === "warning"
+                        ? "risk_watch"
+                        : "meme_scout"}
+                    </p>
+                    <p className="mt-1 text-sm leading-5 text-slate-400">
+                      {event.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </Panel>
+
             <Panel data-testid="public-token-event-feed">
               <h2 className="mb-4 flex items-center gap-2 font-black text-white">
-                <Radio className="text-lime-300" size={18} /> Public event feed
+                <Palette className="text-lime-300" size={18} /> Public event
+                feed
               </h2>
               <div className="grid gap-3">
                 {token.events.map((event) => (
