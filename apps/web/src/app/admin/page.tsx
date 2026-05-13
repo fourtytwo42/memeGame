@@ -119,7 +119,7 @@ export default async function AdminPage() {
                 Operations
               </p>
               <h2 className="text-xl font-black text-white">
-                Health and scale
+                Service health and scale
               </h2>
             </div>
             <Badge tone={health.db.ok && health.redis.ok ? "good" : "warn"}>
