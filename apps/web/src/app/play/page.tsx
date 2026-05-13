@@ -2,10 +2,19 @@ import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Badge, Panel } from "@meme-foundry/ui";
+import {
+  Badge,
+  EventRow,
+  Kicker,
+  MetricChip,
+  NeonPanel,
+  Panel,
+  ProgressMeter
+} from "@meme-foundry/ui";
 import { auth } from "@/auth";
 import { AppShell } from "@/components/shell/app-shell";
 import { StatGroupSummary } from "@/components/game/approachability";
+import { narrativeImage, tokenImage } from "@/lib/assets";
 import { formatCompactCurrency, graduationProgress } from "@/lib/game-state";
 import { prisma } from "@meme-foundry/db";
 import { ArrowRight, Flame, Sparkles, Trophy, Users, Zap } from "lucide-react";
@@ -22,24 +31,6 @@ function firstParam(
 ) {
   const value = params[key];
   return Array.isArray(value) ? value[0] : value;
-}
-
-function narrativeImage(slug: string) {
-  const key = slug.toLowerCase();
-  if (key.includes("ai")) return "/assets/game/narratives/ai-agents.png";
-  if (key.includes("frog")) return "/assets/game/narratives/frogs.png";
-  if (key.includes("dog")) return "/assets/game/narratives/dogs.png";
-  if (key.includes("cat")) return "/assets/game/narratives/cats.png";
-  if (key.includes("food") || key.includes("snack"))
-    return "/assets/game/narratives/food.png";
-  if (key.includes("space") || key.includes("robot"))
-    return "/assets/game/narratives/robots.png";
-  if (key.includes("wizard")) return "/assets/game/narratives/wizard.png";
-  if (key.includes("retro"))
-    return "/assets/game/narratives/retro-internet.png";
-  if (key.includes("community") || key.includes("crew"))
-    return "/assets/game/narratives/community.png";
-  return "/assets/game/narratives/absurdist.png";
 }
 
 export default async function PlayPage({ searchParams }: PlayProps) {
@@ -91,10 +82,7 @@ export default async function PlayPage({ searchParams }: PlayProps) {
     <AppShell>
       <div className="grid gap-4" data-testid="play-command-hub">
         <section className="grid gap-4 xl:grid-cols-[1.2fr_0.95fr_1.45fr]">
-          <Panel
-            className="border-lime-300/25 bg-[linear-gradient(145deg,rgba(132,204,22,0.16),rgba(15,23,42,0.9))]"
-            data-testid="play-primary-panel"
-          >
+          <NeonPanel tone="lime" data-testid="play-primary-panel">
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone={hasToken ? "good" : "warn"}>
                 {hasToken ? "Active token" : "First launch"}
@@ -115,11 +103,7 @@ export default async function PlayPage({ searchParams }: PlayProps) {
                   className="size-full object-contain p-2"
                   height={128}
                   priority
-                  src={
-                    token?.cardImageUrl ??
-                    token?.placeholderImageUrl ??
-                    "/assets/game/tokens/default-token-mascot.png"
-                  }
+                  src={tokenImage(token)}
                   width={128}
                 />
               </div>
@@ -141,44 +125,24 @@ export default async function PlayPage({ searchParams }: PlayProps) {
             </div>
             {token ? (
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-md bg-slate-950/55 p-3">
-                  <p className="text-xs font-bold uppercase text-slate-400">
-                    Hype score
-                  </p>
-                  <p className="text-2xl font-black text-lime-300">
-                    {token.hype}/100
-                  </p>
-                </div>
-                <div className="rounded-md bg-slate-950/55 p-3">
-                  <p className="text-xs font-bold uppercase text-slate-400">
-                    Holders
-                  </p>
-                  <p className="text-2xl font-black text-white">
-                    {token.simulatedHolders.toLocaleString()}
-                  </p>
-                </div>
-                <div className="rounded-md bg-slate-950/55 p-3">
-                  <p className="text-xs font-bold uppercase text-slate-400">
-                    Market cap
-                  </p>
-                  <p className="text-2xl font-black text-white">
-                    {formatCompactCurrency(token.simulatedMarketCap)}
-                  </p>
-                </div>
+                <MetricChip
+                  label="Hype score"
+                  tone="good"
+                  value={`${token.hype}/100`}
+                />
+                <MetricChip
+                  label="Holders"
+                  value={token.simulatedHolders.toLocaleString()}
+                />
+                <MetricChip
+                  label="Market cap"
+                  value={formatCompactCurrency(token.simulatedMarketCap)}
+                />
               </div>
             ) : null}
             {token ? (
               <div className="mt-5">
-                <div className="mb-2 flex justify-between text-sm font-bold text-slate-200">
-                  <span>Graduation progress</span>
-                  <span>{progress}%</span>
-                </div>
-                <div className="h-3 overflow-hidden rounded-full bg-slate-950">
-                  <div
-                    className="h-full rounded-full bg-lime-300"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
+                <ProgressMeter label="Graduation progress" value={progress} />
               </div>
             ) : null}
             <Link
@@ -188,7 +152,7 @@ export default async function PlayPage({ searchParams }: PlayProps) {
               {token ? "Manage launch" : ctaTitle}
               <ArrowRight aria-hidden="true" size={18} />
             </Link>
-          </Panel>
+          </NeonPanel>
 
           <Panel
             className="border-violet-300/25 bg-violet-400/10"
@@ -244,9 +208,7 @@ export default async function PlayPage({ searchParams }: PlayProps) {
           <Panel data-testid="narrative-heat-panel">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-pink-200">
-                  Narrative heat
-                </p>
+                <Kicker>Narrative heat</Kicker>
                 <h2 className="text-xl font-black text-white">Live metas</h2>
               </div>
               <Flame className="text-pink-300" />
@@ -294,15 +256,13 @@ export default async function PlayPage({ searchParams }: PlayProps) {
             <div className="grid gap-3">
               {events.length ? (
                 events.map((event) => (
-                  <div
+                  <EventRow
+                    detail={event.description}
+                    icon={<Zap aria-hidden="true" size={18} />}
                     key={event.id}
-                    className="rounded-md border border-white/10 bg-slate-950/55 p-3"
-                  >
-                    <p className="font-black text-white">{event.title}</p>
-                    <p className="mt-1 text-sm leading-5 text-slate-400">
-                      {event.description}
-                    </p>
-                  </div>
+                    meta={event.severity}
+                    title={event.title}
+                  />
                 ))
               ) : (
                 <p className="text-sm text-slate-400">

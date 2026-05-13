@@ -1,8 +1,9 @@
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Badge, Panel } from "@meme-foundry/ui";
+import { Badge, Kicker, MetricChip, NeonPanel, Panel } from "@meme-foundry/ui";
 import { AppShell } from "@/components/shell/app-shell";
+import { tokenImage } from "@/lib/assets";
 import { formatCompactCurrency } from "@/lib/game-state";
 import { prisma } from "@meme-foundry/db";
 import { Medal, TrendingUp } from "lucide-react";
@@ -57,10 +58,10 @@ export default async function LeaderboardPage({
   return (
     <AppShell>
       <div className="grid gap-4" data-testid="leaderboard-page">
-        <Panel className="border-amber-300/20 bg-[linear-gradient(145deg,rgba(245,158,11,0.14),rgba(15,23,42,0.92))]">
+        <NeonPanel tone="amber">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <Badge tone="good">Season scoped</Badge>
+              <Kicker className="text-amber-200">Season scoped</Kicker>
               <h1 className="mt-3 text-3xl font-black text-white sm:text-4xl">
                 Leaderboard
               </h1>
@@ -70,16 +71,13 @@ export default async function LeaderboardPage({
                 holders, and graduated launches without real trading.
               </p>
             </div>
-            <div className="rounded-lg border border-white/10 bg-slate-950/55 p-4">
-              <p className="text-xs font-bold uppercase text-slate-400">
-                Active season
-              </p>
-              <p className="mt-1 text-xl font-black text-white">
-                {season?.name ?? "No active season"}
-              </p>
-            </div>
+            <MetricChip
+              label="Active season"
+              tone="warn"
+              value={season?.name ?? "No active season"}
+            />
           </div>
-        </Panel>
+        </NeonPanel>
 
         <Panel data-testid="leaderboard-tabs">
           <div className="grid grid-cols-[4.75rem_minmax(0,1fr)] items-start gap-2 sm:grid-cols-[13rem_minmax(0,1fr)] sm:gap-4">
@@ -124,11 +122,7 @@ export default async function LeaderboardPage({
                         alt={`${token.name} token art`}
                         className="size-16 rounded-lg border border-white/10 bg-slate-950/80 object-cover p-1"
                         height={64}
-                        src={
-                          token.cardImageUrl ??
-                          token.placeholderImageUrl ??
-                          "/assets/game/tokens/default-token-mascot.png"
-                        }
+                        src={tokenImage(token)}
                         width={64}
                       />
                       <div className="min-w-0">

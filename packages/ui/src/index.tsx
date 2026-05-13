@@ -49,6 +49,144 @@ export function Panel({
   );
 }
 
+export function NeonPanel({
+  children,
+  className,
+  tone = "lime",
+  ...props
+}: ComponentPropsWithoutRef<"section"> & {
+  tone?: "lime" | "pink" | "cyan" | "violet" | "amber";
+}) {
+  const tones = {
+    amber:
+      "border-amber-300/25 bg-[linear-gradient(145deg,rgba(251,191,36,0.15),rgba(15,23,42,0.9))] shadow-amber-950/20",
+    cyan: "border-cyan-300/25 bg-[linear-gradient(145deg,rgba(34,211,238,0.14),rgba(15,23,42,0.9))] shadow-cyan-950/20",
+    lime: "border-lime-300/25 bg-[linear-gradient(145deg,rgba(132,204,22,0.16),rgba(15,23,42,0.9))] shadow-lime-950/20",
+    pink: "border-pink-300/25 bg-[linear-gradient(145deg,rgba(236,72,153,0.15),rgba(15,23,42,0.9))] shadow-pink-950/20",
+    violet:
+      "border-violet-300/25 bg-[linear-gradient(145deg,rgba(139,92,246,0.16),rgba(15,23,42,0.9))] shadow-violet-950/20"
+  };
+  return (
+    <section
+      className={joinClasses(
+        "min-w-0 overflow-hidden rounded-lg border p-4 shadow-2xl sm:p-5",
+        tones[tone],
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </section>
+  );
+}
+
+export function Kicker({
+  children,
+  className
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <p
+      className={joinClasses(
+        "text-xs font-semibold uppercase tracking-[0.18em] text-pink-200",
+        className
+      )}
+    >
+      {children}
+    </p>
+  );
+}
+
+export function MetricChip({
+  label,
+  value,
+  tone = "neutral"
+}: {
+  label: string;
+  value: ReactNode;
+  tone?: "neutral" | "good" | "warn" | "bad" | "hot";
+}) {
+  const tones = {
+    bad: "border-rose-300/20 bg-rose-400/10 text-rose-100",
+    good: "border-lime-300/20 bg-lime-300/10 text-lime-100",
+    hot: "border-pink-300/20 bg-pink-400/10 text-pink-100",
+    neutral: "border-white/10 bg-slate-950/55 text-white",
+    warn: "border-amber-300/20 bg-amber-300/10 text-amber-100"
+  };
+  return (
+    <div className={joinClasses("rounded-md border p-3", tones[tone])}>
+      <p className="text-xs font-black uppercase text-slate-400">{label}</p>
+      <p className="mt-1 text-2xl font-black">{value}</p>
+    </div>
+  );
+}
+
+export function ProgressMeter({
+  label,
+  value,
+  tone = "good"
+}: {
+  label: string;
+  value: number;
+  tone?: "good" | "warn" | "bad" | "hot" | "cyan";
+}) {
+  const width = `${Math.max(0, Math.min(100, value))}%`;
+  const tones = {
+    bad: "bg-rose-300",
+    cyan: "bg-cyan-300",
+    good: "bg-lime-300",
+    hot: "bg-pink-400",
+    warn: "bg-amber-300"
+  };
+  return (
+    <div className="grid gap-2">
+      <div className="flex justify-between gap-3 text-sm font-black text-slate-200">
+        <span>{label}</span>
+        <span>{value}%</span>
+      </div>
+      <div className="h-3 overflow-hidden rounded-full bg-slate-950/80">
+        <div
+          className={joinClasses("h-full rounded-full", tones[tone])}
+          style={{ width }}
+        />
+      </div>
+    </div>
+  );
+}
+
+export function EventRow({
+  icon,
+  title,
+  detail,
+  meta
+}: {
+  icon?: ReactNode;
+  title: ReactNode;
+  detail: ReactNode;
+  meta?: ReactNode;
+}) {
+  return (
+    <div className="grid min-w-0 grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-3 rounded-md border border-white/10 bg-slate-950/55 p-3">
+      <div className="grid size-10 place-items-center rounded-md bg-white/10 text-lime-200">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="break-words font-black text-white">{title}</p>
+        <p className="mt-1 line-clamp-2 break-words text-sm leading-5 text-slate-400">
+          {detail}
+        </p>
+      </div>
+      {meta ? (
+        <div className="text-right text-xs font-black text-amber-200">
+          {meta}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function Badge({
   children,
   tone = "neutral"

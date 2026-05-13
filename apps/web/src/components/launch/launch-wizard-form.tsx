@@ -3,7 +3,16 @@
 import Image from "next/image";
 import { useActionState, useMemo, useState } from "react";
 import { createLaunch } from "@/app/launch/new/actions";
-import { Badge, Button, FormField, Panel } from "@meme-foundry/ui";
+import { narrativeImage } from "@/lib/assets";
+import {
+  Badge,
+  Button,
+  FormField,
+  Kicker,
+  NeonPanel,
+  Panel,
+  ProgressMeter
+} from "@meme-foundry/ui";
 
 type NarrativeOption = {
   slug: string;
@@ -44,6 +53,27 @@ export function LaunchWizardForm({
       data-testid="launch-wizard-form"
     >
       <div className="grid gap-4">
+        <NeonPanel tone="cyan">
+          <Kicker>Guided launch path</Kicker>
+          <div className="mt-4 grid grid-cols-5 gap-2">
+            {["Basics", "Narrative", "Mascot", "Strategy", "Review"].map(
+              (step, index) => (
+                <div
+                  className="rounded-md border border-white/10 bg-slate-950/55 p-2 text-center"
+                  key={step}
+                >
+                  <span className="mx-auto grid size-7 place-items-center rounded-full border border-cyan-300/40 text-xs font-black text-cyan-100">
+                    {index + 1}
+                  </span>
+                  <p className="mt-1 hidden text-xs font-black text-slate-300 sm:block">
+                    {step}
+                  </p>
+                </div>
+              )
+            )}
+          </div>
+        </NeonPanel>
+
         <Panel data-testid="wizard-basics-step">
           <Badge tone="good">Step 1 · Basics</Badge>
           <h2 className="mt-3 text-2xl font-black text-white">
@@ -101,7 +131,7 @@ export function LaunchWizardForm({
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {narratives.map((narrative) => (
               <label
-                className="cursor-pointer rounded-md border border-white/10 bg-slate-950/50 p-3 has-[:checked]:border-emerald-300 has-[:checked]:bg-emerald-300/10"
+                className="grid cursor-pointer gap-3 overflow-hidden rounded-md border border-white/10 bg-slate-950/50 p-3 has-[:checked]:border-lime-300 has-[:checked]:bg-lime-300/10"
                 key={narrative.slug}
               >
                 <input
@@ -112,10 +142,40 @@ export function LaunchWizardForm({
                   type="radio"
                   value={narrative.slug}
                 />
-                <span className="font-black text-white">{narrative.name}</span>
-                <span className="mt-1 block text-sm text-emerald-200">
-                  {opportunityLabel(narrative)}
-                </span>
+                <div className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-3">
+                  <Image
+                    alt={`${narrative.name} narrative art`}
+                    className="size-18 rounded-md border border-white/10 bg-slate-950/70 object-contain p-1"
+                    height={72}
+                    src={narrativeImage(narrative.slug)}
+                    width={72}
+                  />
+                  <div className="min-w-0">
+                    <span className="break-words font-black text-white">
+                      {narrative.name}
+                    </span>
+                    <span className="mt-1 block text-sm font-bold text-lime-200">
+                      {opportunityLabel(narrative)}
+                    </span>
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <ProgressMeter
+                    label="Heat"
+                    tone="hot"
+                    value={narrative.heat}
+                  />
+                  <ProgressMeter
+                    label="Saturation"
+                    tone="warn"
+                    value={narrative.saturation}
+                  />
+                  <ProgressMeter
+                    label="Fatigue"
+                    tone="bad"
+                    value={narrative.fatigue}
+                  />
+                </div>
               </label>
             ))}
           </div>
@@ -190,7 +250,7 @@ export function LaunchWizardForm({
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
             Live token card preview
           </p>
-          <div className="mt-4 rounded-lg border border-emerald-300/20 bg-slate-950/60 p-4">
+          <div className="mt-4 overflow-hidden rounded-lg border border-cyan-300/30 bg-slate-950/60 p-4 shadow-[0_0_26px_rgba(34,211,238,0.14)]">
             <Image
               alt="Transparent default token placeholder"
               className="mx-auto size-40"
@@ -208,6 +268,15 @@ export function LaunchWizardForm({
             <p className="mt-3 text-sm leading-6 text-slate-300">
               Narrative: {selectedNarrative?.name ?? "Pick a trend"}
             </p>
+            <div className="mt-3 rounded-md border border-lime-300/20 bg-lime-300/10 p-3">
+              <p className="text-sm font-black text-lime-100">
+                Image queued after launch
+              </p>
+              <p className="mt-1 text-xs leading-5 text-slate-300">
+                Launch uses this polished placeholder immediately. Final local
+                art can arrive later without blocking play.
+              </p>
+            </div>
             <p className="mt-2 text-sm leading-6 text-slate-400">
               Placeholder art is ready now. Final generated art can arrive
               later.
