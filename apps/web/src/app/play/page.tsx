@@ -253,7 +253,7 @@ export default async function PlayPage({ searchParams }: PlayProps) {
                     alt={`${item.name} narrative art`}
                     className="size-12 rounded-md bg-slate-950/80 object-contain p-1"
                     height={48}
-                    src={narrativeImage(item.slug)}
+                    src={narrativeImage(item.name ?? item.slug)}
                     width={48}
                   />
                   <div className="min-w-0">

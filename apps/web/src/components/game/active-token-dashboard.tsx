@@ -589,7 +589,7 @@ export function ActiveTokenDashboard({
                 className="size-18 rounded-md border border-white/10 bg-slate-950/70 object-contain p-1"
                 height={72}
                 src={narrativeImage(
-                  narrativeContext.slug ?? narrativeContext.name
+                  narrativeContext.name ?? narrativeContext.slug
                 )}
                 width={72}
               />

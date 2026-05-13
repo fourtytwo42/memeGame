@@ -131,7 +131,7 @@ export default async function SeasonDetailPage({ params }: SeasonDetailProps) {
                         alt={`${narrative.name} narrative art`}
                         className="size-18 rounded-md border border-white/10 bg-slate-950/70 object-contain p-1"
                         height={72}
-                        src={narrativeImage(narrative.slug)}
+                        src={narrativeImage(narrative.name ?? narrative.slug)}
                         width={72}
                       />
                       <div>

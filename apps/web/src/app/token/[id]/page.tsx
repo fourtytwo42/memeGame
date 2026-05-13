@@ -494,7 +494,7 @@ export default async function PublicTokenPage({
                     alt={`${token.narrative} narrative art`}
                     className="size-16 rounded-md border border-white/10 bg-slate-950/70 object-contain p-1"
                     height={64}
-                    src={narrativeImage(token.narrativeSlug ?? token.narrative)}
+                    src={narrativeImage(token.narrative ?? token.narrativeSlug)}
                     width={64}
                   />
                   <div>
