@@ -17,7 +17,16 @@ import { StatGroupSummary } from "@/components/game/approachability";
 import { narrativeImage, tokenImage } from "@/lib/assets";
 import { formatCompactCurrency, graduationProgress } from "@/lib/game-state";
 import { prisma } from "@meme-foundry/db";
-import { ArrowRight, Flame, Sparkles, Trophy, Users, Zap } from "lucide-react";
+import {
+  ArrowRight,
+  Flame,
+  Gift,
+  Shield,
+  Sparkles,
+  Trophy,
+  Users,
+  Zap
+} from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -85,10 +94,83 @@ export default async function PlayPage({ searchParams }: PlayProps) {
     1,
     ...sparkline.map((tick) => Math.round(tick.marketCap))
   );
+  const topEvent = events[0];
+  const leaderboardStanding = token
+    ? leaders.findIndex((leader) => leader.id === token.id) + 1
+    : 0;
 
   return (
     <AppShell>
       <div className="grid gap-4" data-testid="play-command-hub">
+        <section
+          className="grid gap-3 lg:grid-cols-4"
+          data-testid="command-snapshot-strip"
+        >
+          <div className="rounded-md border border-lime-300/20 bg-lime-300/10 p-3 shadow-[0_0_22px_rgba(132,204,22,0.10)]">
+            <div className="flex items-center gap-2 text-lime-200">
+              <Zap aria-hidden="true" size={16} />
+              <p className="text-xs font-black uppercase">Live pressure</p>
+            </div>
+            <p className="mt-2 line-clamp-1 font-black text-white">
+              {topEvent?.title ?? "No active global event"}
+            </p>
+            <p className="mt-1 line-clamp-1 text-xs font-bold text-slate-300">
+              {topEvent
+                ? `${topEvent.severity} impact is moving the sim now`
+                : "Play actions will create the next event beat"}
+            </p>
+          </div>
+
+          <div className="rounded-md border border-amber-300/20 bg-amber-300/10 p-3 shadow-[0_0_22px_rgba(251,191,36,0.10)]">
+            <div className="flex items-center gap-2 text-amber-200">
+              <Trophy aria-hidden="true" size={16} />
+              <p className="text-xs font-black uppercase">Standing</p>
+            </div>
+            <p className="mt-2 font-black text-white">
+              {leaderboardStanding
+                ? `#${leaderboardStanding} this board`
+                : leaders[0]
+                  ? `Leader: ${leaders[0].name}`
+                  : "No rank yet"}
+            </p>
+            <p className="mt-1 line-clamp-1 text-xs font-bold text-slate-300">
+              {token
+                ? `${formatCompactCurrency(token.simulatedMarketCap)} simulated cap`
+                : "Launch to enter the board"}
+            </p>
+          </div>
+
+          <div className="rounded-md border border-cyan-300/20 bg-cyan-300/10 p-3 shadow-[0_0_22px_rgba(34,211,238,0.10)]">
+            <div className="flex items-center gap-2 text-cyan-200">
+              <Users aria-hidden="true" size={16} />
+              <p className="text-xs font-black uppercase">Crew boost</p>
+            </div>
+            <p className="mt-2 line-clamp-1 font-black text-white">
+              {crew?.name ?? "No crew joined"}
+            </p>
+            <p className="mt-1 line-clamp-1 text-xs font-bold text-slate-300">
+              {crew
+                ? `${crew.members.length} members ready to coordinate`
+                : "Join a crew for shared boosts"}
+            </p>
+          </div>
+
+          <div className="rounded-md border border-violet-300/20 bg-violet-300/10 p-3 shadow-[0_0_22px_rgba(167,139,250,0.10)]">
+            <div className="flex items-center gap-2 text-violet-200">
+              <Gift aria-hidden="true" size={16} />
+              <p className="text-xs font-black uppercase">Daily quest</p>
+            </div>
+            <p className="mt-2 line-clamp-1 font-black text-white">
+              {token ? "Take one low-risk action" : "Create a launch"}
+            </p>
+            <p className="mt-1 line-clamp-1 text-xs font-bold text-slate-300">
+              {token
+                ? "Earn steady progress without real money"
+                : "Start the guided game loop"}
+            </p>
+          </div>
+        </section>
+
         <section className="grid gap-4 xl:grid-cols-[1.2fr_0.95fr_1.45fr]">
           <NeonPanel tone="lime" data-testid="play-primary-panel">
             <div className="flex flex-wrap items-center gap-2">
@@ -210,8 +292,8 @@ export default async function PlayPage({ searchParams }: PlayProps) {
             </div>
             <div className="mt-5 grid gap-3">
               <div className="rounded-md border border-white/10 bg-slate-950/50 p-3">
-                <p className="text-xs font-bold uppercase text-slate-400">
-                  Action
+                <p className="flex items-center gap-2 text-xs font-bold uppercase text-slate-400">
+                  <Shield aria-hidden="true" size={14} /> Action
                 </p>
                 <p className="mt-1 font-black text-white">
                   {token ? "Take the next dashboard action" : ctaTitle}
@@ -321,11 +403,7 @@ export default async function PlayPage({ searchParams }: PlayProps) {
                       alt={`${leader.name} token art`}
                       className="size-11 shrink-0 rounded-md bg-slate-900 object-cover"
                       height={44}
-                      src={
-                        leader.cardImageUrl ??
-                        leader.placeholderImageUrl ??
-                        "/assets/game/tokens/default-token-mascot.png"
-                      }
+                      src={tokenImage(leader)}
                       width={44}
                     />
                     <div className="min-w-0">
